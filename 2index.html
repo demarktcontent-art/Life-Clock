@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Life Clock">
+<title>CEO Life Clock</title>
+<style>
+:root{
+  --gold:#D4A853;--gold-l:#F0C97A;--gold-d:#7A5E28;
+  --glow:rgba(212,168,83,.12);
+  --dk:#07070F;--dk2:#0E0E1C;--dk3:#151525;--dk4:#1C1C30;
+  --bdr:rgba(212,168,83,.1);--bdr-h:rgba(212,168,83,.3);
+  --tx:#EDE9E0;--tx-d:#6A6580;--tx-m:#A8A39A;
+  --green:#4ECAA0;--blue:#5BA8FF;--orange:#FF9048;
+  --pink:#FF6B9D;--purple:#A97BFF;--red:#FF5252;--cyan:#38D9F5;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{background:var(--dk);color:var(--tx);font-family:-apple-system,'IBM Plex Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:260px;min-width:260px;background:var(–dk2);border-right:1px solid var(–bdr);position:fixed;top:0;left:0;bottom:0;z-index:350;display:flex;flex-direction:column;overflow-y:auto;transition:transform .3s ease;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(–dk4);}
+.sb-head{padding:20px 18px 14px;border-bottom:1px solid var(–bdr);}
+.sb-badge{font-family:‘IBM Plex Mono’,monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(–gold);display:block;margin-bottom:5px;}
+.sb-title{font-size:18px;font-weight:700;color:var(–gold-l);line-height:1.2;}
+
+/* Ring */
+.sb-ring{padding:16px 18px;display:flex;flex-direction:column;align-items:center;border-bottom:1px solid var(–bdr);}
+.ring-wrap{position:relative;width:100px;height:100px;margin-bottom:10px;}
+.ring-svg{transform:rotate(-90deg);width:100px;height:100px;}
+.r-bg{fill:none;stroke:var(–dk4);stroke-width:8;}
+.r-fg{fill:none;stroke:var(–gold);stroke-width:8;stroke-linecap:round;stroke-dasharray:283;stroke-dashoffset:283;transition:stroke-dashoffset .8s ease;}
+.ring-ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.r-pct{font-size:26px;font-weight:700;color:var(–gold-l);line-height:1;}
+.r-sub{font-size:8px;color:var(–tx-d);letter-spacing:1px;margin-top:1px;}
+.sb-info{font-size:11px;color:var(–tx-m);text-align:center;}
+.sb-info b{color:var(–gold);}
+
+/* Day grid */
+.sb-days{padding:12px 18px;border-bottom:1px solid var(–bdr);}
+.sec-lbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(–tx-d);margin-bottom:8px;display:block;}
+.day-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;}
+.d-btn{aspect-ratio:1;border:1px solid var(–bdr);background:transparent;color:var(–tx-d);font-size:11px;cursor:pointer;border-radius:3px;transition:all .2s;display:flex;align-items:center;justify-content:center;position:relative;}
+.d-btn:hover,.d-btn:active{border-color:var(–gold-d);color:var(–gold);}
+.d-btn.active{background:var(–gold-d);border-color:var(–gold);color:#fff;font-weight:700;}
+.d-dot{width:4px;height:4px;border-radius:50%;background:var(–green);position:absolute;bottom:2px;right:2px;display:none;}
+.d-btn.has-p .d-dot{display:block;}
+
+/* Nav */
+.sb-nav{flex:1;padding:6px 0;}
+.n-item{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;transition:all .2s;border-left:2px solid transparent;text-decoration:none;}
+.n-item:hover,.n-item:active{background:var(–glow);}
+.n-item.act{border-left-color:var(–gold);background:var(–glow);}
+.n-icon{font-size:14px;width:18px;text-align:center;}
+.n-info{flex:1;}
+.n-name{font-size:11px;font-weight:500;color:var(–tx);display:block;line-height:1.2;}
+.n-time{font-size:9px;color:var(–tx-d);}
+.n-bar{width:24px;height:3px;background:var(–dk4);border-radius:2px;overflow:hidden;}
+.n-fill{height:100%;background:var(–gold);transition:width .4s;width:0%;}
+
+/* Reminder + footer */
+.sb-rem{padding:10px 18px;border-top:1px solid var(–bdr);}
+.rem-tog{width:100%;padding:8px 12px;background:var(–dk3);border:1px solid var(–bdr);border-radius:4px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.rem-lbl{font-size:10px;color:var(–tx-m);}
+.rem-ind{width:26px;height:14px;background:var(–dk4);border-radius:7px;position:relative;transition:background .2s;}
+.rem-ind.on{background:var(–gold);}
+.rem-dot{width:10px;height:10px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:left .2s;}
+.rem-ind.on .rem-dot{left:14px;}
+.sb-foot{padding:10px 18px;border-top:1px solid var(–bdr);}
+.rst-btn{width:100%;padding:7px;background:transparent;border:1px solid var(–bdr);color:var(–tx-d);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-radius:3px;transition:all .2s;}
+.rst-btn:hover,.rst-btn:active{border-color:var(–red);color:var(–red);}
+
+/* MAIN */
+.main{margin-left:260px;min-height:100vh;padding-bottom:80px;}
+.g-bar{height:2px;background:var(–dk4);}
+.g-fill{height:100%;background:linear-gradient(to right,var(–gold-d),var(–gold-l));transition:width .5s;width:0%;}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(7,7,15,.97);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-bottom:1px solid var(–bdr);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.tb-l{display:flex;align-items:center;gap:14px;}
+.tb-clk{font-size:20px;font-weight:600;color:var(–gold-l);letter-spacing:2px;line-height:1;font-variant-numeric:tabular-nums;}
+.tb-dt{font-size:10px;color:var(–tx-d);margin-top:2px;}
+.tb-r{display:flex;gap:16px;}
+.tb-stat{text-align:center;}
+.tb-n{font-size:18px;font-weight:700;color:var(–gold-l);line-height:1;display:block;}
+.tb-l2{font-size:8px;color:var(–tx-d);letter-spacing:1px;text-transform:uppercase;}
+
+.content{padding:0 28px;}
+.cur-banner{display:none;margin:14px 0 0;padding:11px 16px;background:linear-gradient(135deg,rgba(212,168,83,.1),rgba(78,202,160,.06));border:1px solid rgba(212,168,83,.22);border-radius:5px;align-items:center;gap:10px;}
+.cur-banner.show{display:flex;}
+.cb-pulse{width:8px;height:8px;border-radius:50%;background:var(–gold);animation:pulse 1.5s ease infinite;flex-shrink:0;}
+.cb-tx{font-size:12px;color:var(–tx-m);}
+.cb-tx b{color:var(–gold-l);}
+
+.streak-row{display:flex;gap:3px;margin:10px 0 2px;overflow-x:auto;}
+.s-pip{min-width:20px;height:20px;border-radius:3px;background:var(–dk4);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(–tx-d);}
+.s-pip.partial{background:rgba(212,168,83,.2);color:var(–gold);}
+.s-pip.full{background:var(–gold-d);color:var(–gold-l);font-weight:700;}
+
+.congrats{display:none;margin:14px 0;padding:16px 22px;background:linear-gradient(135deg,rgba(212,168,83,.12),rgba(78,202,160,.08));border:1px solid rgba(212,168,83,.3);border-radius:5px;text-align:center;}
+.congrats.show{display:block;}
+.congrats h2{font-size:22px;font-weight:700;color:var(–gold-l);margin-bottom:3px;}
+.congrats p{font-size:12px;color:var(–tx-m);}
+
+/* Phase */
+.phase-sec{margin-top:4px;}
+.ph-hdr{display:flex;align-items:center;gap:12px;padding:22px 0 12px;position:sticky;top:50px;z-index:50;background:linear-gradient(to bottom,var(–dk) 80%,transparent);}
+.ph-icon{font-size:22px;}
+.ph-info{flex:1;}
+.ph-title{font-size:20px;font-weight:700;color:var(–tx);line-height:1;}
+.ph-time{font-size:10px;color:var(–tx-d);margin-top:2px;}
+.ph-cnt{font-size:10px;color:var(–gold);}
+.ph-line{height:1px;background:linear-gradient(to right,rgba(212,168,83,.3),transparent);margin-bottom:8px;}
+
+/* Block card */
+.block-card{background:var(–dk2);border:1px solid var(–bdr);border-radius:6px;margin-bottom:5px;transition:all .2s;overflow:hidden;}
+.block-card:active{border-color:var(–bdr-h);}
+.block-card.done{border-color:rgba(78,202,160,.22);background:rgba(78,202,160,.03);}
+.block-card.active-now{border-color:rgba(212,168,83,.4);}
+
+.bc-grid{display:grid;grid-template-columns:62px 1fr 42px;cursor:pointer;}
+.bc-tc{padding:12px 8px;border-right:1px solid var(–bdr);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
+.bc-t1{font-size:10px;color:var(–gold);font-weight:600;text-align:center;}
+.bc-t2{font-size:9px;color:var(–tx-d);text-align:center;}
+.bc-dur{font-size:8px;color:var(–tx-d);margin-top:3px;background:var(–dk3);padding:1px 5px;border-radius:2px;}
+
+.bc-body{padding:12px 13px;}
+.bc-r1{display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap;}
+.bc-type{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 6px;border-radius:2px;border:1px solid;flex-shrink:0;}
+.t-work{color:var(–blue);border-color:rgba(91,168,255,.3);background:rgba(91,168,255,.07);}
+.t-habit{color:var(–gold);border-color:rgba(212,168,83,.3);background:rgba(212,168,83,.07);}
+.t-both{color:var(–cyan);border-color:rgba(56,217,245,.3);background:rgba(56,217,245,.07);}
+.t-prayer{color:var(–purple);border-color:rgba(169,123,255,.3);background:rgba(169,123,255,.07);}
+.t-rest{color:var(–green);border-color:rgba(78,202,160,.3);background:rgba(78,202,160,.07);}
+
+.bc-name{font-size:13px;font-weight:600;color:var(–tx);line-height:1.3;flex:1;transition:color .2s;}
+.block-card.done .bc-name{color:var(–green);text-decoration:line-through;text-decoration-color:rgba(78,202,160,.4);}
+.bc-desc{font-size:11px;color:var(–tx-d);line-height:1.5;margin-bottom:6px;}
+
+.bc-tasks{display:flex;flex-direction:column;gap:3px;margin-top:5px;}
+.t-row{display:flex;align-items:flex-start;gap:7px;padding:5px 7px;border-radius:3px;cursor:pointer;border:1px solid transparent;transition:background .15s;}
+.t-row:active{background:var(–glow);}
+.t-row.done{background:rgba(78,202,160,.05);}
+.t-cb{width:14px;height:14px;border:1px solid var(–bdr-h);border-radius:2px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:9px;color:transparent;transition:all .2s;}
+.t-row.done .t-cb{background:var(–green);border-color:var(–green);color:#fff;}
+.t-lbl{font-size:11px;color:var(–tx-m);line-height:1.45;flex:1;}
+.t-row.done .t-lbl{color:var(–tx-d);text-decoration:line-through;}
+.t-htag{font-size:7px;color:var(–gold);background:rgba(212,168,83,.08);border:1px solid rgba(212,168,83,.2);padding:1px 5px;border-radius:2px;flex-shrink:0;margin-top:2px;white-space:nowrap;}
+
+.bc-cc{border-left:1px solid var(–bdr);display:flex;align-items:center;justify-content:center;}
+.chk-ring{width:26px;height:26px;border-radius:50%;border:2px solid var(–bdr-h);display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .25s;color:transparent;cursor:pointer;}
+.block-card.done .chk-ring{background:var(–green);border-color:var(–green);color:#fff;}
+
+/* Popup */
+.overlay{position:fixed;inset:0;background:rgba(7,7,15,.8);z-index:1999;display:none;}
+.overlay.show{display:block;}
+.popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-60%) scale(.9);background:var(–dk2);border:1px solid var(–gold-d);border-radius:10px;padding:28px 28px;max-width:440px;width:88%;text-align:center;opacity:0;pointer-events:none;transition:all .3s;z-index:2000;}
+.popup.show{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:all;}
+.pp-icon{font-size:36px;margin-bottom:10px;}
+.pp-title{font-size:19px;font-weight:700;color:var(–gold-l);margin-bottom:5px;}
+.pp-time{font-size:11px;color:var(–gold);letter-spacing:1.5px;margin-bottom:8px;}
+.pp-desc{font-size:12px;color:var(–tx-m);line-height:1.6;margin-bottom:20px;}
+.pp-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.pp-btn{padding:10px 18px;border-radius:5px;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:1px solid;font-weight:600;}
+.pp-ok{background:var(–gold);border-color:var(–gold);color:var(–dk);}
+.pp-skip{background:transparent;border-color:var(–bdr);color:var(–tx-d);}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(–dk3);border:1px solid var(–green);border-radius:5px;padding:10px 18px;font-size:11px;color:var(–green);opacity:0;transition:all .3s;z-index:9999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.warn{border-color:var(–orange);color:var(–orange);}
+.toast.remind{border-color:var(–gold);color:var(–gold);}
+
+/* ── MENU BUTTON ── */
+.menu-btn{
+display:none;position:fixed;top:0;left:0;z-index:400;
+background:var(–dk2);border:none;border-right:1px solid var(–bdr);border-bottom:1px solid var(–bdr);
+padding:14px 16px;color:var(–gold);cursor:pointer;font-size:20px;
+-webkit-appearance:none;line-height:1;
+}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;}
+.sidebar-backdrop.show{display:block;}
+
+/* ── MOBILE ── */
+@media(max-width:700px){
+/* Sidebar hidden off-screen by default */
+.sidebar{
+transform:translateX(-100%);
+z-index:350;
+width:280px;
+box-shadow:4px 0 24px rgba(0,0,0,.5);
+}
+.sidebar.open{transform:translateX(0);}
+
+/* Main takes full width */
+.main{margin-left:0 !important;}
+
+/* Show menu button */
+.menu-btn{display:flex;align-items:center;justify-content:center;}
+
+/* Topbar — leave space for menu button */
+.topbar{padding:10px 14px 10px 58px;}
+
+/* Content padding */
+.content{padding:0 12px;}
+
+/* Clock size */
+.tb-clk{font-size:15px;letter-spacing:1px;}
+.tb-dt{font-size:9px;}
+.tb-r{gap:10px;}
+.tb-n{font-size:16px;}
+
+/* Block card — fix grid so tick column doesn’t overflow */
+.bc-grid{grid-template-columns:56px 1fr 40px;}
+.bc-tc{padding:10px 6px;}
+.bc-t1{font-size:9px;}
+.bc-t2{font-size:8px;}
+.bc-body{padding:10px 10px;}
+.bc-name{font-size:12px;}
+.bc-desc{font-size:10px;}
+
+/* Task rows — fix tick checkbox alignment */
+.t-row{padding:5px 6px;gap:6px;}
+.t-cb{
+width:16px;height:16px;min-width:16px;min-height:16px;
+border-radius:3px;margin-top:2px;flex-shrink:0;
+display:flex;align-items:center;justify-content:center;
+font-size:10px;
+}
+.t-lbl{font-size:10px;line-height:1.4;}
+.t-htag{display:none;} /* hide on mobile to save space */
+
+/* Check ring on right */
+.chk-ring{width:24px;height:24px;font-size:13px;}
+
+/* Phase header */
+.ph-hdr{padding:18px 0 10px;top:44px;}
+.ph-title{font-size:17px;}
+.ph-time{font-size:9px;}
+
+/* Popup */
+.popup{width:92%;padding:24px 20px;}
+.pp-title{font-size:16px;}
+.pp-desc{font-size:11px;}
+}
+
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(212,168,83,.5);}50%{box-shadow:0 0 0 7px rgba(212,168,83,0);}}
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-thumb{background:var(–dk4);}
+</style>
+
+</head>
+<body>
+
+<button class="menu-btn" id="menuBtn">☰</button>
+
+<div class="sidebar-backdrop" id="backdrop"></div>
+
+<div class="sidebar" id="sidebar">
+  <div class="sb-head">
+    <span class="sb-badge">Coach Kanchon</span>
+    <div class="sb-title">CEO Life Clock™</div>
+  </div>
+  <div class="sb-ring">
+    <div class="ring-wrap">
+      <svg class="ring-svg" viewBox="0 0 100 100">
+        <circle class="r-bg" cx="50" cy="50" r="45"/>
+        <circle class="r-fg" id="ringFg" cx="50" cy="50" r="45"/>
+      </svg>
+      <div class="ring-ctr">
+        <span class="r-pct" id="ringPct">0%</span>
+        <span class="r-sub">TODAY</span>
+      </div>
+    </div>
+    <div class="sb-info"><b id="doneC">0</b> / <b id="totalC">0</b> complete</div>
+  </div>
+  <div class="sb-days">
+    <span class="sec-lbl">Focus Phase — Days 1–10</span>
+    <div class="day-grid" id="dayGrid"></div>
+  </div>
+  <nav class="sb-nav" id="sbNav"></nav>
+  <div class="sb-rem">
+    <div class="rem-tog" id="remTog">
+      <span class="rem-lbl">🔔 Reminders</span>
+      <div class="rem-ind" id="remInd"><div class="rem-dot"></div></div>
+    </div>
+  </div>
+  <div class="sb-foot">
+    <button class="rst-btn" id="rstBtn">↺ Reset Today</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="g-bar"><div class="g-fill" id="gFill"></div></div>
+  <div class="topbar">
+    <div class="tb-l">
+      <div>
+        <div class="tb-clk" id="tbClk">--:--:--</div>
+        <div class="tb-dt" id="tbDt">March 2026</div>
+      </div>
+    </div>
+    <div class="tb-r">
+      <div class="tb-stat"><span class="tb-n" id="tbDone">0</span><span class="tb-l2">Done</span></div>
+      <div class="tb-stat"><span class="tb-n" id="tbLeft">0</span><span class="tb-l2">Left</span></div>
+      <div class="tb-stat"><span class="tb-n" id="tbDay">D1</span><span class="tb-l2">Day</span></div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="cur-banner" id="curBanner">
+      <div class="cb-pulse"></div>
+      <div class="cb-tx">Now: <b id="cbTx">—</b></div>
+    </div>
+    <div class="streak-row" id="streakRow"></div>
+    <div class="congrats" id="congrats">
+      <h2>🏆 Perfect Day!</h2>
+      <p>All blocks complete. Log it in your Life Clock Tracker!</p>
+    </div>
+    <div id="schedCon"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="popup" id="popup">
+  <div class="pp-icon" id="ppIcon">⏰</div>
+  <div class="pp-title" id="ppTitle">—</div>
+  <div class="pp-time" id="ppTime">—</div>
+  <div class="pp-desc" id="ppDesc">—</div>
+  <div class="pp-btns">
+    <button class="pp-btn pp-ok" id="ppOk">✓ Mark Done</button>
+    <button class="pp-btn pp-skip" id="ppSkip">Snooze 5 min</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var SCHED=[{id:"p1",icon:"🌅",title:"Morning Power Core",subtitle:"Identity · Divine · Body",time:"5:00 – 7:00 AM",blocks:[{id:"b1",s:"5:00",e:"5:30",dur:"30m",type:"prayer",name:"Fajr Prayer + Remembrance + Sacred Reading",desc:"Day starts with the Almighty. Before your CEO hat — your human soul. The most important 30 minutes of the day.",tasks:[{id:"t1a",tx:"Fajr Prayer — full salah, no rushing",h:"#36 Prayer"},{id:"t1b",tx:"Remembrance (Dhikr) — morning adhkar, 5 min",h:"#37 Remembrance"},{id:"t1c",tx:"Sacred Reading — Quran, 1 page minimum",h:"#38 Sacred Reading"},{id:"t1d",tx:"Good Deed intention — plan today's unseen act",h:"#39 Good Deed"}]},{id:"b2",s:"5:30",e:"5:45",dur:"15m",type:"habit",name:"Power Declaration + Mind Movie + Power Pose",desc:"Program your identity before the world programs you. These 15 minutes set your neurological baseline for the day.",tasks:[{id:"t2a",tx:"Power Declaration — say 3x: I AM Disciplined",h:"#1 Power Declaration"},{id:"t2b",tx:"Mind Movie — visualise your best CEO day, 60 sec",h:"#2 Mind Movie"},{id:"t2c",tx:"Power Pose — stand tall, arms wide, 2 minutes",h:"#3 Power Pose"},{id:"t2d",tx:"Gratitude Drop — write 3 things you're grateful for",h:"#6 Gratitude Drop"}]},{id:"b3",s:"5:45",e:"6:30",dur:"45m",type:"habit",name:"Move — Exercise 30 Minutes",desc:"Your body is your hardware. A CEO whose hardware is weak eventually crashes the whole system. Non-negotiable.",tasks:[{id:"t3a",tx:"30 min: PMR / Gym / HIIT / Yoga / Walk",h:"#11 Move"},{id:"t3b",tx:"Hydrate — first 2 glasses of water",h:"#10 Hydrate"},{id:"t3c",tx:"Log body weight (kg) in tracker",h:"#16 Body Weight"},{id:"t3d",tx:"Listen to business podcast while moving",h:"#26 Read 10+ Min"}]},{id:"b4",s:"6:30",e:"7:00",dur:"30m",type:"habit",name:"Hygiene + Eat Healthy + Mindful Moments",desc:"Dress like the CEO you are. Eat a balanced plate. Clean body, clean mind.",tasks:[{id:"t4a",tx:"Shower and dress — present yourself as the CEO you declared",h:"#3 Power Pose"},{id:"t4b",tx:"Balanced breakfast — carb + protein + fat",h:"#13 Eat Healthy"},{id:"t4c",tx:"Mindful Moments — no screen during breakfast",h:"#8 Mindful Moments"},{id:"t4d",tx:"Touch — barefoot grounding, 2 min",h:"#14 Touch"},{id:"t4e",tx:"Mental Hygiene micro-reset — 1 min pause, exhale",h:"#7 Mental Hygiene"}]}]},{id:"p2",icon:"📊",title:"CEO Morning Command Room",subtitle:"Occupational Wholeness — Work With Worth",time:"7:00 – 7:30 AM",blocks:[{id:"b5",s:"7:00",e:"7:30",dur:"30m",type:"both",name:"Performance Review + Sales + Ad Results + Big 3",desc:"Before deep work, you need the numbers. Set the agenda — no one else sets it for you.",tasks:[{id:"t5a",tx:"Performance review — team KPIs, orders, open issues",h:"#21 Scorecard"},{id:"t5b",tx:"Sales check — yesterday vs Reach ₹50 target",h:"#22 Daily Sales"},{id:"t5c",tx:"Ad results — ROAS, CTR, CPM all campaigns",h:"#21 Numbers Check"},{id:"t5d",tx:"Write Top 3 Big Moves (90-90-90)",h:"#20 Three Big Moves"},{id:"t5e",tx:"Set Momentum Meter — today's focus intention",h:"#17 Momentum Meter"},{id:"t5f",tx:"Alignment Win — 1 hard thing aligned with core values",h:"#9 Alignment Win"}]}]},{id:"p3",icon:"🔥",title:"Deep Work Block 1",subtitle:"90-Minute Zero Distraction — Build, Not Just Run",time:"7:30 – 9:00 AM",blocks:[{id:"b6",s:"7:30",e:"9:00",dur:"90m",type:"work",name:"Deep Work — Growth Engine (Phone OFF)",desc:"DND on. No WhatsApp, no email, no calls. This is where you BUILD the business. Protect it.",tasks:[{id:"t6a",tx:"MON/WED: Marketing & Ads — Meta/Google, scale winners",h:"#19 90-Min Block"},{id:"t6b",tx:"TUE/THU: Product & Supply Chain — sourcing, listings",h:"#19 90-Min Block"},{id:"t6c",tx:"FRI: Systems & Hiring — SOPs, automation",h:"#19 90-Min Block"},{id:"t6d",tx:"SAT: Brand & Content Strategy",h:"#19 90-Min Block"},{id:"t6e",tx:"Content Create Daily — 1 post, video or ad creative",h:"#18 Content Daily"}]}]},{id:"p4",icon:"☕",title:"Recharge — Body & Soul",subtitle:"Physical Power + Divine Connection",time:"9:00 – 10:00 AM",blocks:[{id:"b7",s:"9:00",e:"10:00",dur:"60m",type:"both",name:"Breakfast Break + Quran Reading + Mindful Reset",desc:"You've done 4 hours of hard work. Step away fully — this is compound performance, not lost time.",tasks:[{id:"t7a",tx:"Breakfast — eat balanced, sit down, no screen",h:"#13 Eat Healthy"},{id:"t7b",tx:"Quran Reading — 15 min focused reading",h:"#38 Sacred Reading"},{id:"t7c",tx:"Mindful Moments — no business thinking",h:"#8 Mindful Moments"},{id:"t7d",tx:"Hydrate — 2 more glasses of water",h:"#10 Hydrate"},{id:"t7e",tx:"Nature Touch — 5 min sunlight, fresh air",h:"#34 Nature Touch"},{id:"t7f",tx:"Mental Hygiene micro-reset before next block",h:"#7 Mental Hygiene"}]}]},{id:"p5",icon:"⚡",title:"Deep Work Block 2",subtitle:"Operations & Revenue Intelligence",time:"10:00 AM – 12:00 PM",blocks:[{id:"b8",s:"10:00",e:"10:45",dur:"45m",type:"work",name:"Customer Feedback + Competitor Analysis + Warranty",desc:"Know your customer. Know your competition. Know your product gaps. Market intelligence hour.",tasks:[{id:"t8a",tx:"Customer feedback — reviews, support tickets, returns",h:"#5 Empathy Practice"},{id:"t8b",tx:"Competitor analysis — pricing, listings, ad creatives",h:"#27 Micro-Learn"},{id:"t8c",tx:"Warranty review — claims, quality flags, priorities",h:"#21 Scorecard"},{id:"t8d",tx:"Empathy Practice — understand one frustrated customer",h:"#5 Empathy Practice"}]},{id:"b9",s:"10:45",e:"12:00",dur:"75m",type:"work",name:"Ad Campaign Updates",desc:"Your ad account is your revenue engine. Daily optimisation. Small improvements compound into massive returns.",tasks:[{id:"t9a",tx:"Pause underperforming ad sets — below ROAS threshold",h:"#19 90-Min Block"},{id:"t9b",tx:"Scale winning campaigns — increase budget on proven ads",h:"#22 Daily Sales"},{id:"t9c",tx:"Test 1 new ad creative or angle this week",h:"#18 Content Daily"},{id:"t9d",tx:"Review audience targeting — retargeting, lookalikes",h:"#19 90-Min Block"},{id:"t9e",tx:"Update numbers in business scorecard",h:"#21 Numbers Check"}]}]},{id:"p6",icon:"💰",title:"Wealth Intelligence Block",subtitle:"Wealth Wisdom — Earn · Enjoy · Empower",time:"12:00 – 1:00 PM",blocks:[{id:"b10",s:"12:00",e:"13:00",dur:"60m",type:"both",name:"Supplier Update + Finance Review + Act of Giving",desc:"Money doesn't manage itself. Relationships don't build themselves. Your eCommerce wealth engine gets tuned here.",tasks:[{id:"t10a",tx:"Supplier calls — stock, lead times, quality, new deals",h:"#30 Meaningful Talk"},{id:"t10b",tx:"Inventory review — reorder points, slow movers",h:"#21 Scorecard"},{id:"t10c",tx:"Savings tracking — record expenses, flag mindless spending",h:"#23 Savings"},{id:"t10d",tx:"Cashflow snapshot — incoming, outgoing, net position",h:"#23 Expense Awareness"},{id:"t10e",tx:"Act of Giving — give time, money, or kindness today",h:"#24 Act of Giving"},{id:"t10f",tx:"Love Bomb — appreciation to supplier or partner",h:"#29 Love Bomb"}]}]},{id:"p7",icon:"🕐",title:"Midday Sacred Recharge",subtitle:"Prayer · Nutrition · Recovery · Learning",time:"1:00 – 3:00 PM",blocks:[{id:"b11",s:"13:00",e:"13:20",dur:"20m",type:"prayer",name:"Dhuhr Prayer",desc:"Sacred pause at the midpoint. Prayer realigns your intention — you're not just building revenue, you're building purpose.",tasks:[{id:"t11a",tx:"Dhuhr Prayer — full salah, take your time",h:"#36 Prayer Time"},{id:"t11b",tx:"Post-prayer dhikr — 5 min remembrance",h:"#37 Remembrance"}]},{id:"b12",s:"13:20",e:"14:10",dur:"50m",type:"rest",name:"Lunch + Family Time",desc:"Step away from business completely. The richest people are those rich in relationships.",tasks:[{id:"t12a",tx:"Lunch — eat balanced, sit with family, no phone",h:"#13 Eat Healthy"},{id:"t12b",tx:"Family / Kids time — 100% present, no work",h:"#31 Play/Learn Kids"},{id:"t12c",tx:"Meaningful Talk — 10 min undistracted conversation",h:"#30 Meaningful Talk"},{id:"t12d",tx:"Emotional Alchemy — Feel → Flow → Free",h:"#4 Emotional Alchemy"}]},{id:"b13",s:"14:10",e:"14:30",dur:"19m",type:"rest",name:"Power Nap — 19 Minutes Exactly",desc:"Set a timer. Science-backed CEO performance. Afternoon output 30-40% sharper. Never skip this.",tasks:[{id:"t13a",tx:"Set timer for exactly 19 minutes",h:"#15 Power Nap"},{id:"t13b",tx:"Dark room, phone face down and silent",h:"#15 Power Nap"},{id:"t13c",tx:"On waking: 2 min Power Pose to re-activate",h:"#3 Power Pose"}]},{id:"b14",s:"14:30",e:"15:00",dur:"30m",type:"habit",name:"Learning Block — Read + Micro-Learn + Language",desc:"The most dangerous CEO is one who stopped learning. 30 minutes that compound into a completely different CEO.",tasks:[{id:"t14a",tx:"Read 10+ minutes — business / marketing / finance book",h:"#26 Read 10+ Min"},{id:"t14b",tx:"Micro-learn — 1 new platform feature or tactic today",h:"#27 Micro-Learn"},{id:"t14c",tx:"Study Time — CK / BRAVE material",h:"#25 Study Time"},{id:"t14d",tx:"New Language — 10 min practice",h:"#28 New Language"}]}]},{id:"p8",icon:"🚀",title:"Afternoon Scale Block",subtitle:"Prayer · B2B · Marketplace · Influencer",time:"3:00 – 5:00 PM",blocks:[{id:"b15",s:"15:00",e:"15:15",dur:"15m",type:"prayer",name:"Asr Prayer",desc:"Pause. Pray. Reset your afternoon intention. Stay grounded in purpose.",tasks:[{id:"t15a",tx:"Asr Prayer — full salah",h:"#36 Prayer Time"},{id:"t15b",tx:"2-min intention reset for next 2 hours",h:"#17 Momentum Meter"}]},{id:"b16",s:"15:15",e:"16:00",dur:"45m",type:"work",name:"Influencer Outreach + Content Update",desc:"Brand reach and content freshness are daily revenue multipliers.",tasks:[{id:"t16a",tx:"Influencer outreach — DM 3-5 creators, follow up actives",h:"#18 Content Daily"},{id:"t16b",tx:"Moderator feedback — review content performance, engagement",h:"#18 Content Daily"},{id:"t16c",tx:"Content update — refresh product descriptions, images",h:"#18 Content Daily"},{id:"t16d",tx:"Schedule 1 post for tomorrow",h:"#18 Content Daily"}]},{id:"b17",s:"16:00",e:"17:00",dur:"60m",type:"work",name:"B2B Strategy + Packly & Daraz Seller Update",desc:"B2B is your revenue multiplier. Marketplace visibility is your organic traffic. Both need daily attention.",tasks:[{id:"t17a",tx:"B2B strategy — wholesale pipeline, bulk deals, partnerships",h:"#19 90-Min Block"},{id:"t17b",tx:"Packly dashboard — packaging orders, print, delivery",h:"#21 Scorecard"},{id:"t17c",tx:"Daraz seller update — rankings, score, campaigns",h:"#22 Daily Sales"},{id:"t17d",tx:"Micro-learn: 1 new B2B or marketplace tactic",h:"#27 Micro-Learn"}]}]},{id:"p9",icon:"📈",title:"Finance + Team + Environment",subtitle:"Numbers · People · Space",time:"5:00 – 6:30 PM",blocks:[{id:"b18",s:"17:00",e:"17:45",dur:"45m",type:"work",name:"Cashflow + Expense & Budget Review",desc:"Money clarity = business clarity. CEOs who skip this fly blind.",tasks:[{id:"t18a",tx:"Cashflow — incoming, outgoing, net position today",h:"#23 Savings Tracking"},{id:"t18b",tx:"Expense review — flag unnecessary spending",h:"#23 Expense Awareness"},{id:"t18c",tx:"Budget check — within operational budget?",h:"#21 Scorecard"},{id:"t18d",tx:"Daily Sales final count vs Reach ₹50 target",h:"#22 Daily Sales"},{id:"t18e",tx:"Update full business scorecard",h:"#21 Numbers Check"}]},{id:"b19",s:"17:45",e:"18:15",dur:"30m",type:"work",name:"Team Feedback + Mentor Check-In",desc:"Your team is your multiplier. 30 minutes of quality feedback saves hours of rework.",tasks:[{id:"t19a",tx:"Team feedback — working, blocked, needs CEO call",h:"#41 Mentor Check-In"},{id:"t19b",tx:"Recognise 1 team member — Love Bomb",h:"#29 Love Bomb"},{id:"t19c",tx:"Mentor/partner check-in call or message",h:"#41 Mentor Check-In"},{id:"t19d",tx:"Apologise or Forgive Fast — release 1 grudge today",h:"#32 Apologise/Forgive"}]},{id:"b20",s:"18:15",e:"18:30",dur:"15m",type:"habit",name:"Organise + Digital Detox Prep",desc:"Your space either drains you or defines you. 15 minutes of clarity before family time.",tasks:[{id:"t20a",tx:"Organise desk, shelf, inbox, High-Energy Corner",h:"#33 Organise"},{id:"t20b",tx:"Digital Detox — log off work apps",h:"#35 Digital Detox"},{id:"t20c",tx:"Hydrate — hit your 10+ glasses daily target",h:"#10 Hydrate"}]}]},{id:"p10",icon:"🌆",title:"Family + Evening Build",subtitle:"Relational Harmony · Content · Product",time:"6:30 – 9:30 PM",blocks:[{id:"b21",s:"18:30",e:"19:00",dur:"30m",type:"prayer",name:"Maghrib Prayer + Family Love Bomb",desc:"Sacred pause. Then 100% present with family. No laptop, no work talk. This is what you're building for.",tasks:[{id:"t21a",tx:"Maghrib Prayer — full salah with family if possible",h:"#36 Prayer Time"},{id:"t21b",tx:"Love Bomb — hug family member, express genuine love",h:"#29 Love Bomb"},{id:"t21c",tx:"Play or learn with kids — presence is best parenting",h:"#31 Kids/Family"},{id:"t21d",tx:"Good Deed — do the unseen, unsaid act from morning",h:"#39 Good Deed"}]},{id:"b22",s:"19:00",e:"20:00",dur:"60m",type:"both",name:"Dinner + Meaningful Talk",desc:"Eat balanced. Have a real conversation. This is where families grow or drift.",tasks:[{id:"t22a",tx:"Dinner — balanced meal, no screens at table",h:"#13 Eat Healthy"},{id:"t22b",tx:"Meaningful Talk — 10 min undistracted, face hard talk",h:"#30 Meaningful Talk"},{id:"t22c",tx:"Mindful Moments — taste your food, hear your family",h:"#8 Mindful Moments"},{id:"t22d",tx:"Touch — hug, handshake, human warmth",h:"#14 Touch"}]},{id:"b23",s:"20:00",e:"21:00",dur:"60m",type:"work",name:"Product & Content Plan + Shoot + Edit",desc:"Tomorrow's revenue is built tonight. Batch create content calmly in the evening.",tasks:[{id:"t23a",tx:"New product research — trends, validation, suppliers",h:"#27 Micro-Learn"},{id:"t23b",tx:"Content plan — topics, formats, 3-day schedule",h:"#18 Content Daily"},{id:"t23c",tx:"Content Shoot — product videos, unboxing, review content",h:"#18 Content Daily"},{id:"t23d",tx:"Testing check — products, packaging, shipping",h:"#21 Scorecard"},{id:"t23e",tx:"Edit content — cut, caption, thumbnail, schedule",h:"#18 Content Daily"}]}]},{id:"p11",icon:"🌙",title:"Night Wind Down + CEO Review",subtitle:"Divine · Reflection · Blueprint · Sleep",time:"9:30 – 10:00 PM",blocks:[{id:"b24",s:"21:30",e:"22:00",dur:"30m",type:"both",name:"Isha + CEO Review + Blueprint + Sleep",desc:"Close the loop. Set up tomorrow. Pray. Lights out 10 PM — non-negotiable. Sleep is your CEO superpower.",tasks:[{id:"t24a",tx:"Isha Prayer — full salah, evening dhikr",h:"#36 Prayer Time"},{id:"t24b",tx:"Learning — write 1 key insight learned today",h:"#27 Micro-Learn"},{id:"t24c",tx:"CEO Evening Review — did I hit Big 3?",h:"#42 Happiness Score"},{id:"t24d",tx:"Happiness Score 1–10 — rate your day in tracker",h:"#42 Happiness Score"},{id:"t24e",tx:"Next-Day Blueprint — write tomorrow's Top 3",h:"#43 Next-Day Blueprint"},{id:"t24f",tx:"Layer Subtraction — release ego, what did I learn?",h:"#40 EGO Subtraction"},{id:"t24g",tx:"Sacred Reading — 5-10 min Quran before sleep",h:"#38 Sacred Reading"},{id:"t24h",tx:"Phone out of bedroom — full digital detox",h:"#35 Digital Detox"},{id:"t24i",tx:"Lights out 10:00 PM — 7 hrs sleep, wake at 5 AM",h:"#12 Sleep"}]}]}];
+
+var day=1,remOn=false,tSt={},bSt={},lastRem=null,popBid=null,snoozeT=null;
+function SK(d){return"lc3_t_d"+d;}
+function BK(d){return"lc3_b_d"+d;}
+function load(){try{tSt=JSON.parse(localStorage.getItem(SK(day))||"{}");bSt=JSON.parse(localStorage.getItem(BK(day))||"{}");}catch(e){tSt={};bSt={};}}
+function save(){try{localStorage.setItem(SK(day),JSON.stringify(tSt));localStorage.setItem(BK(day),JSON.stringify(bSt));}catch(e){}}
+
+function counts(){
+  var t=0,d=0;
+  SCHED.forEach(function(p){p.blocks.forEach(function(b){
+    b.tasks.forEach(function(tk){t++;if(tSt[tk.id])d++;});
+    t++;if(bSt[b.id])d++;
+  });});
+  return{t:t,d:d};
+}
+
+function renderAll(){renderDays();renderNav();renderSched();renderStreak();updateProg();highlightNow();}
+
+function renderDays(){
+  var g=document.getElementById("dayGrid");g.innerHTML="";
+  for(var d=1;d<=10;d++){
+    var btn=document.createElement("button");
+    btn.className="d-btn"+(d===day?" active":"");
+    btn.innerHTML=d+'<span class="d-dot"></span>';
+    (function(dd){
+      try{var t=JSON.parse(localStorage.getItem(SK(dd))||"{}");if(Object.keys(t).length>0)btn.classList.add("has-p");}catch(e){}
+      btn.onclick=function(){day=dd;load();renderAll();closeSidebar();};
+    })(d);
+    g.appendChild(btn);
+  }
+}
+
+function renderNav(){
+  var nav=document.getElementById("sbNav");nav.innerHTML="";
+  SCHED.forEach(function(phase){
+    var done=phase.blocks.filter(function(b){return bSt[b.id];}).length;
+    var pct=phase.blocks.length?Math.round(done/phase.blocks.length*100):0;
+    var a=document.createElement("a");
+    a.className="n-item";a.href="#"+phase.id;
+    a.innerHTML='<span class="n-icon">'+phase.icon+'</span><div class="n-info"><span class="n-name">'+phase.title+'</span><span class="n-time">'+phase.time+'</span></div><div class="n-bar"><div class="n-fill" style="width:'+pct+'%"></div></div>';
+    a.onclick=function(){closeSidebar();};
+    nav.appendChild(a);
+  });
+}
+
+function renderSched(){
+  var c=document.getElementById("schedCon");c.innerHTML="";
+  SCHED.forEach(function(phase,pi){
+    var sec=document.createElement("div");sec.className="phase-sec";sec.id=phase.id;
+    var done=phase.blocks.filter(function(b){return bSt[b.id];}).length;
+    sec.innerHTML='<div class="ph-hdr"><span class="ph-icon">'+phase.icon+'</span><div class="ph-info"><div class="ph-title">'+phase.title+'</div><div class="ph-time">'+phase.subtitle+' · '+phase.time+'</div></div><span class="ph-cnt" id="pc-'+phase.id+'">'+done+'/'+phase.blocks.length+'</span></div><div class="ph-line"></div>';
+    phase.blocks.forEach(function(blk,bi){
+      var isDone=!!bSt[blk.id];
+      var card=document.createElement("div");
+      card.className="block-card"+(isDone?" done":"");
+      card.id="bc-"+blk.id;
+      var typeLabel={work:"Work",prayer:"Prayer",rest:"Rest",habit:"Habit",both:"Work+Habit"}[blk.type]||"Block";
+      var tasksH=blk.tasks.map(function(t){
+        var td=!!tSt[t.id];
+        return '<div class="t-row'+(td?" done":"")+'" id="tr-'+t.id+'" data-tid="'+t.id+'" data-bid="'+blk.id+'"><div class="t-cb">'+(td?"✓":"")+'</div><span class="t-lbl">'+t.tx+'</span><span class="t-htag">'+t.h+'</span></div>';
+      }).join("");
+      card.innerHTML='<div class="bc-grid" data-bid="'+blk.id+'"><div class="bc-tc"><span class="bc-t1">'+blk.s+'</span><span class="bc-t2">'+blk.e+'</span><span class="bc-dur">'+blk.dur+'</span></div><div class="bc-body"><div class="bc-r1"><span class="bc-type t-'+blk.type+'">'+typeLabel+'</span><span class="bc-name">'+blk.name+'</span></div><div class="bc-desc">'+blk.desc+'</div><div class="bc-tasks">'+tasksH+'</div></div><div class="bc-cc"><div class="chk-ring">'+(isDone?"✓":"")+'</div></div></div>';
+      sec.appendChild(card);
+    });
+    c.appendChild(sec);
+  });
+
+  // Event delegation
+  document.getElementById("schedCon").addEventListener("click",function(e){
+    var trow=e.target.closest(".t-row");
+    if(trow){e.stopPropagation();doToggleTask(trow.dataset.tid,trow.dataset.bid,trow);return;}
+    var grid=e.target.closest(".bc-grid");
+    if(grid){doToggleBlock(grid.dataset.bid);return;}
+  });
+}
+
+function renderStreak(){
+  var row=document.getElementById("streakRow");row.innerHTML="";
+  for(var d=1;d<=10;d++){
+    var pip=document.createElement("div");pip.className="s-pip";pip.textContent=d;
+    try{
+      var ts=JSON.parse(localStorage.getItem(SK(d))||"{}");
+      var bs=JSON.parse(localStorage.getItem(BK(d))||"{}");
+      var dk=Object.keys(ts).length+Object.keys(bs).length;
+      if(dk>0&&dk<80)pip.classList.add("partial");
+      else if(dk>=80)pip.classList.add("full");
+    }catch(e){}
+    row.appendChild(pip);
+  }
+}
+
+function updateProg(){
+  var c=counts();var pct=c.t?Math.round(c.d/c.t*100):0;
+  document.getElementById("ringPct").textContent=pct+"%";
+  document.getElementById("doneC").textContent=c.d;
+  document.getElementById("totalC").textContent=c.t;
+  document.getElementById("tbDone").textContent=c.d;
+  document.getElementById("tbLeft").textContent=c.t-c.d;
+  document.getElementById("tbDay").textContent="D"+day;
+  document.getElementById("gFill").style.width=pct+"%";
+  var circ=283;document.getElementById("ringFg").style.strokeDashoffset=circ-(pct/100)*circ;
+  document.getElementById("congrats").classList.toggle("show",c.d===c.t&&c.t>0);
+  SCHED.forEach(function(ph){
+    var el=document.getElementById("pc-"+ph.id);
+    if(el){var dn=ph.blocks.filter(function(b){return bSt[b.id];}).length;el.textContent=dn+"/"+ph.blocks.length;}
+  });
+}
+
+function doToggleBlock(bid){
+  var was=!!bSt[bid];bSt[bid]=!was;
+  if(!was)SCHED.forEach(function(p){p.blocks.forEach(function(b){if(b.id===bid)b.tasks.forEach(function(t){tSt[t.id]=true;});});});
+  save();
+  var card=document.getElementById("bc-"+bid);
+  if(card){
+    card.classList.toggle("done",!was);
+    var r=card.querySelector(".chk-ring");if(r)r.textContent=!was?"✓":"";
+    SCHED.forEach(function(p){p.blocks.forEach(function(b){if(b.id===bid)b.tasks.forEach(function(t){
+      var tr=document.getElementById("tr-"+t.id);
+      if(tr){tr.classList.toggle("done",!!tSt[t.id]);var cb=tr.querySelector(".t-cb");if(cb)cb.textContent=tSt[t.id]?"✓":"";}
+    });});});
+  }
+  updateProg();renderNav();renderStreak();
+  if(!was){var n="";SCHED.forEach(function(p){p.blocks.forEach(function(b){if(b.id===bid)n=b.name;});});showToast("✓ "+n.substring(0,36));}
+}
+
+function doToggleTask(tid,bid,el){
+  var was=!!tSt[tid];tSt[tid]=!was;
+  el.classList.toggle("done",!was);
+  var cb=el.querySelector(".t-cb");if(cb)cb.textContent=!was?"✓":"";
+  save();
+  var all=true;
+  SCHED.forEach(function(p){p.blocks.forEach(function(b){if(b.id===bid)b.tasks.forEach(function(t){if(!tSt[t.id])all=false;});});});
+  if(all&&!bSt[bid]){bSt[bid]=true;save();var card=document.getElementById("bc-"+bid);if(card){card.classList.add("done");var r=card.querySelector(".chk-ring");if(r)r.textContent="✓";}showToast("🎯 Block complete!");}
+  updateProg();renderNav();
+}
+
+function toMin(s){var p=(s||"00:00").split(":");return parseInt(p[0])*60+parseInt(p[1]);}
+function nowMin(){var n=new Date();return n.getHours()*60+n.getMinutes();}
+
+function highlightNow(){
+  var now=nowMin();var cur=null;
+  SCHED.forEach(function(p){p.blocks.forEach(function(b){
+    var card=document.getElementById("bc-"+b.id);
+    var act=now>=toMin(b.s)&&now<toMin(b.e)&&!bSt[b.id];
+    if(card)card.classList.toggle("active-now",act);
+    if(act)cur=b;
+  });});
+  var banner=document.getElementById("curBanner");
+  if(cur&&!bSt[cur.id]){banner.classList.add("show");document.getElementById("cbTx").textContent=cur.s+" – "+cur.name;}
+  else banner.classList.remove("show");
+  if(remOn&&cur&&cur.id!==lastRem&&!bSt[cur.id]){lastRem=cur.id;popBid=cur.id;showPopup(cur);}
+}
+
+function tick(){
+  var n=new Date();function p(x){return x.toString().padStart(2,"0");}
+  document.getElementById("tbClk").textContent=p(n.getHours())+":"+p(n.getMinutes())+":"+p(n.getSeconds());
+  document.getElementById("tbDt").textContent="March 2026 — Day "+day;
+}
+
+function toggleRem(){
+  remOn=!remOn;
+  document.getElementById("remInd").classList.toggle("on",remOn);
+  showToast(remOn?"🔔 Reminders ON":"🔕 Reminders OFF","remind");
+  if(remOn&&"Notification"in window&&Notification.permission==="default")Notification.requestPermission();
+}
+
+function showPopup(blk){
+  var icons={prayer:"🕌",rest:"😴",habit:"⚡",work:"💼",both:"🎯"};
+  document.getElementById("ppIcon").textContent=icons[blk.type]||"⏰";
+  document.getElementById("ppTitle").textContent=blk.name;
+  document.getElementById("ppTime").textContent=blk.s+" – "+blk.e+" ("+blk.dur+")";
+  document.getElementById("ppDesc").textContent=blk.desc;
+  document.getElementById("popup").classList.add("show");
+  document.getElementById("overlay").classList.add("show");
+  if("Notification"in window&&Notification.permission==="granted")new Notification("⏰ Life Clock",{body:blk.s+" — "+blk.name});
+}
+
+function markFromPopup(){
+  if(popBid){doToggleBlock(popBid);}
+  closePopup();
+}
+
+function closePopup(){
+  document.getElementById("popup").classList.remove("show");
+  document.getElementById("overlay").classList.remove("show");
+  if(snoozeT)clearTimeout(snoozeT);
+  if(remOn&&popBid){
+    (function(bid){snoozeT=setTimeout(function(){
+      if(remOn&&!bSt[bid]){var b=null;SCHED.forEach(function(p){p.blocks.forEach(function(bl){if(bl.id===bid)b=bl;});});if(b)showPopup(b);}
+    },5*60*1000);})(popBid);
+  }
+}
+
+function showToast(msg,type){
+  var t=document.getElementById("toast");t.textContent=msg;t.className="toast show"+(type?" "+type:"");
+  clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("show");},3000);
+}
+
+function resetDay(){
+  if(!confirm("Reset Day "+day+"?"))return;
+  tSt={};bSt={};save();lastRem=null;renderAll();showToast("↺ Day "+day+" reset","warn");
+}
+
+function closeSidebar(){
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("backdrop").classList.remove("show");
+}
+
+// Events
+document.getElementById("menuBtn").onclick=function(){
+  document.getElementById("sidebar").classList.toggle("open");
+  document.getElementById("backdrop").classList.toggle("show");
+};
+document.getElementById("backdrop").onclick=closeSidebar;
+document.getElementById("remTog").onclick=toggleRem;
+document.getElementById("rstBtn").onclick=resetDay;
+document.getElementById("ppOk").onclick=markFromPopup;
+document.getElementById("ppSkip").onclick=closePopup;
+document.getElementById("overlay").onclick=closePopup;
+
+load();renderAll();setInterval(tick,1000);setInterval(highlightNow,30000);tick();
+</script>
+
+</body>
+</html>
