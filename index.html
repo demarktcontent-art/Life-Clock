@@ -1164,13 +1164,15 @@ var prayerTimes={};
 
 function loadPrayerTimes(){
 try{prayerTimes=JSON.parse(localStorage.getItem(PRAYER_TIMES_KEY)||”{}”);}catch(e){prayerTimes={};}
-// Apply saved prayer times first
+// Only apply and rebuild if user has actually saved custom prayer times
+if(Object.keys(prayerTimes).length===0)return;
+// Apply saved prayer times to prayer habits
 BLOCKS.forEach(function(blk){
 blk.habits.forEach(function(h){
 if(h.prayerEdit&&prayerTimes[h.hid])h.tag=prayerTimes[h.hid];
 });
 });
-// Then rebuild entire schedule from those prayer times
+// Rebuild entire schedule from those prayer times
 rebuildSchedule();
 }
 
@@ -1274,6 +1276,9 @@ var dhuhr  = getPMin(“p_dhuhr”);
 var asr    = getPMin(“p_asr”);
 var maghrib= getPMin(“p_maghrib”);
 var isha   = getPMin(“p_isha”);
+
+// Safety: if any prayer time is invalid, don’t rebuild
+if(fajr<0||dhuhr<0||asr<0||maghrib<0||isha<0)return;
 
 // Helper to set a habit’s time by hid
 function setT(hid, min){ BLOCKS.forEach(function(b){b.habits.forEach(function(h){if(h.hid===hid)h.tag=minToTime(min);});}); }
