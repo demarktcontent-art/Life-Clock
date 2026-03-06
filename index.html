@@ -830,8 +830,9 @@ function renderMain(){
       // Note / writing section HTML
       var noteHTML="";
       if(hasNote){
+        var ph=(h.notePlaceholder||"Write your notes here…").replace(/\\/g,"").replace(/"/g,"&quot;").replace(/\n/g,"&#10;");
         noteHTML='<div class="exp-lbl note-lbl">✏️ Write it down</div>'+
-          '<textarea class="note-area" id="note-'+h.hid+'" placeholder="'+(h.notePlaceholder||"Write your notes here…")+'" data-key="'+noteKey+'">'+noteVal+'</textarea>'+
+          '<textarea class="note-area" id="note-'+h.hid+'" placeholder="'+ph+'" data-key="'+noteKey+'">'+noteVal+'</textarea>'+
 
 ```
       '<button class="note-done-btn'+(isDone?" note-done-active":"")+'" data-hid="'+h.hid+'" id="ndone-'+h.hid+'">'+
@@ -846,6 +847,9 @@ function renderMain(){
 
   var hasExpand=(hasWork||hasNote)?1:0;
 
+  var safeName=h.name.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  var safeHint=h.hint.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
   card.innerHTML=
     '<div class="hc-row" data-hid="'+h.hid+'" data-rid="'+h.id+'" data-hw="'+hasExpand+'">'+
       '<div class="hc-left">'+
@@ -853,8 +857,8 @@ function renderMain(){
         '<span class="hc-num">#'+h.n+'</span>'+
       '</div>'+
       '<div class="hc-mid">'+
-        '<div class="hc-name">'+h.name+'</div>'+
-        '<div class="hc-hint">'+h.hint+'</div>'+
+        '<div class="hc-name">'+safeName+'</div>'+
+        '<div class="hc-hint">'+safeHint+'</div>'+
         (hasWork||hasNote?'<span class="hc-work-tag">'+(hasWork?'+ tasks ':'')+( hasNote?'+ notes':'')+'</span>':'')+
       '</div>'+
       '<div class="hc-chk"><div class="chk">'+(isDone?"✓":"")+'</div></div>'+
