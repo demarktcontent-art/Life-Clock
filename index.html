@@ -867,17 +867,13 @@ c.appendChild(sec);
 
 });
 
-// Single delegated click handler
+try{
 document.getElementById(“mainCon”).addEventListener(“click”,function(e){
-// Note-done button
 var ndBtn=e.target.closest(”.note-done-btn”);
 if(ndBtn){e.stopPropagation();toggleHabit(ndBtn.dataset.hid);return;}
-// Work row
 var wr=e.target.closest(”.w-row”);
 if(wr&&wr.dataset.wid){e.stopPropagation();toggleWork(wr.dataset.wid,wr.dataset.hid,wr);return;}
-// Textarea — don’t toggle
 if(e.target.tagName===“TEXTAREA”)return;
-// Card row
 var row=e.target.closest(”.hc-row”);
 if(!row||!row.dataset.hid)return;
 if(e.target.closest(”.hc-chk”)){
@@ -889,13 +885,12 @@ if(exp)exp.classList.toggle(“open”);
 toggleHabit(row.dataset.hid);
 }
 });
-
-// Auto-save notes on input
 document.getElementById(“mainCon”).addEventListener(“input”,function(e){
 if(e.target.tagName===“TEXTAREA”&&e.target.dataset.key){
 localStorage.setItem(e.target.dataset.key,e.target.value);
 }
 });
+}catch(e){}
 }
 
 function renderStreak(){
@@ -1493,28 +1488,9 @@ showToast(“↺ Day “+day+” reset”,“warn”);
 }
 function closeSidebar(){document.getElementById(“sidebar”).classList.remove(“open”);document.getElementById(“bdrop”).classList.remove(“show”);}
 
-// ════════════ EVENTS ════════════
-document.getElementById(“menuBtn”).onclick=function(){document.getElementById(“sidebar”).classList.toggle(“open”);document.getElementById(“bdrop”).classList.toggle(“show”);};
-document.getElementById(“bdrop”).onclick=closeSidebar;
-document.getElementById(“rstBtn”).onclick=resetDay;
-document.getElementById(“ppOk”).onclick=markFromPopup;
-document.getElementById(“ppSkip”).onclick=closePopup;
-document.getElementById(“overlay”).onclick=closePopup;
-document.getElementById(“editOverlay”).onclick=function(e){if(e.target===this)closeEditPopup();};
-document.getElementById(“reportBtn”).onclick=function(){showReport();closeSidebar();};
-document.getElementById(“rpClose”).onclick=function(){document.getElementById(“reportPanel”).classList.remove(“show”);};
-document.getElementById(“mentorBtn”).onclick=function(){openMentor();closeSidebar();};
-document.getElementById(“mentorClose”).onclick=function(){document.getElementById(“mentorOverlay”).classList.remove(“show”);};
-document.getElementById(“mentorSend”).onclick=sendMentor;
-document.getElementById(“mentorInput”).onkeydown=function(e){if(e.key===“Enter”)sendMentor();};
-document.getElementById(“mentorOverlay”).onclick=function(e){if(e.target===this)this.classList.remove(“show”);};
-document.getElementById(“searchInp”).oninput=function(){doSearch(this.value);};
-document.getElementById(“searchClear”).onclick=function(){document.getElementById(“searchInp”).value=””;doSearch(””);};
-document.getElementById(“prayerTimesBtn”).onclick=editPrayerTimes;
-document.getElementById(“dayCompleteBtn”).onclick=dayComplete;
-
 // ════════════ BOOT ════════════
 function initNotifications(){
+try{
 if(“Notification”in window){
 if(Notification.permission===“default”){
 Notification.requestPermission().then(function(p){
@@ -1526,16 +1502,43 @@ var lbl=document.getElementById(“notifLbl”);
 if(lbl)lbl.textContent=“🔔 Notifications: “+(Notification.permission===“granted”?“ON — block alerts active”:“Enable in iPhone Settings > Safari”);
 }
 }
+}catch(e){}
 }
 
-loadPrayerTimes();
-load();renderAll();
-setInterval(tick,1000);
-setInterval(function(){highlightNow();checkBlockNotifications();checkMidnightReset();},60000);
-tick();
-highlightNow();
-checkBlockNotifications();
-initNotifications();
+function bindEvents(){
+function on(id,ev,fn){var el=document.getElementById(id);if(el)el[ev]=fn;}
+on(“menuBtn”,“onclick”,function(){document.getElementById(“sidebar”).classList.toggle(“open”);document.getElementById(“bdrop”).classList.toggle(“show”);});
+on(“bdrop”,“onclick”,closeSidebar);
+on(“rstBtn”,“onclick”,resetDay);
+on(“ppOk”,“onclick”,markFromPopup);
+on(“ppSkip”,“onclick”,closePopup);
+on(“overlay”,“onclick”,closePopup);
+on(“editOverlay”,“onclick”,function(e){if(e.target===this)closeEditPopup();});
+on(“reportBtn”,“onclick”,function(){showReport();closeSidebar();});
+on(“rpClose”,“onclick”,function(){document.getElementById(“reportPanel”).classList.remove(“show”);});
+on(“mentorBtn”,“onclick”,function(){openMentor();closeSidebar();});
+on(“mentorClose”,“onclick”,function(){document.getElementById(“mentorOverlay”).classList.remove(“show”);});
+on(“mentorSend”,“onclick”,sendMentor);
+on(“mentorInput”,“onkeydown”,function(e){if(e.key===“Enter”)sendMentor();});
+on(“mentorOverlay”,“onclick”,function(e){if(e.target===this)this.classList.remove(“show”);});
+on(“searchInp”,“oninput”,function(){doSearch(this.value);});
+on(“searchClear”,“onclick”,function(){document.getElementById(“searchInp”).value=””;doSearch(””);});
+on(“prayerTimesBtn”,“onclick”,editPrayerTimes);
+on(“dayCompleteBtn”,“onclick”,dayComplete);
+}
+
+window.onload=function(){
+try{loadPrayerTimes();}catch(e){console.log(“prayerTimes err”,e);}
+try{load();}catch(e){console.log(“load err”,e);}
+try{renderAll();}catch(e){console.log(“render err”,e);}
+try{bindEvents();}catch(e){console.log(“events err”,e);}
+try{setInterval(tick,1000);}catch(e){}
+try{setInterval(function(){highlightNow();checkBlockNotifications();checkMidnightReset();},60000);}catch(e){}
+try{tick();}catch(e){}
+try{highlightNow();}catch(e){}
+try{checkBlockNotifications();}catch(e){}
+try{initNotifications();}catch(e){}
+};
 </script>
 
 </body>
