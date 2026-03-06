@@ -793,755 +793,790 @@ function renderNav(){
   });
 }
 
+function mk(tag,cls){var el=document.createElement(tag);if(cls)el.className=cls;return el;}
+function tx(el,t){el.textContent=t;return el;}
+
 function renderMain(){
-  var c=document.getElementById("mainCon");c.innerHTML="";
+  var c=document.getElementById("mainCon");
+  c.innerHTML="";
+
   BLOCKS.forEach(function(blk){
-    var sec=document.createElement("div");sec.className="phase-sec";sec.id=blk.id;
-    var uids=[];blk.habits.forEach(function(h){if(UNIQUE_IDS.indexOf(h.hid)>-1&&uids.indexOf(h.hid)<0)uids.push(h.hid);});
+    var uids=[];
+    blk.habits.forEach(function(h){if(UNIQUE_IDS.indexOf(h.hid)>-1&&uids.indexOf(h.hid)<0)uids.push(h.hid);});
     var done=uids.filter(function(id){return hSt[id];}).length;
 
-    // No per-block edit button — single global prayer button in topbar
-    sec.innerHTML='<div class="ph-hdr"><span class="ph-icon">'+blk.icon+'</span><div class="ph-info"><div class="ph-title">'+blk.title+'</div><div class="ph-time-lbl" id="pht-'+blk.id+'">'+blk.time+'</div></div><span class="ph-cnt" id="pc-'+blk.id+'">'+done+'/'+uids.length+'</span></div><div class="ph-line"></div>';
+    var sec=mk("div","phase-sec");sec.id=blk.id;
+
+    // Block header
+    var hdr=mk("div","ph-hdr");
+    var icon=mk("span","ph-icon");icon.textContent=blk.icon;
+    var info=mk("div","ph-info");
+    var ttl=mk("div","ph-title");ttl.textContent=blk.title;
+    var tlbl=mk("div","ph-time-lbl");tlbl.textContent=blk.time;tlbl.id="pht-"+blk.id;
+    info.appendChild(ttl);info.appendChild(tlbl);
+    var cnt=mk("span","ph-cnt");cnt.id="pc-"+blk.id;cnt.textContent=done+"/"+uids.length;
+    hdr.appendChild(icon);hdr.appendChild(info);hdr.appendChild(cnt);
+    sec.appendChild(hdr);
+    sec.appendChild(mk("div","ph-line"));
 
     blk.habits.forEach(function(h){
       var isDone=!!hSt[h.hid];
       var hasWork=h.work&&h.work.length>0;
       var hasNote=!!h.note;
       var noteKey="lc7_note_d"+day+"_"+h.hid;
-      var noteVal=localStorage.getItem(noteKey)||"";
+      var hasExpand=hasWork||hasNote;
 
-      var card=document.createElement("div");
-      card.className="hcard"+(isDone?" done":"");
-      card.dataset.type=h.type;
+      // Card
+      var card=mk("div","hcard"+(isDone?" done":""));
       card.id="hc-"+h.id;
-      card.dataset.hnum=h.n;
+      card.dataset.type=h.type;
+      card.dataset.hnum=String(h.n);
       card.dataset.hname=h.name.toLowerCase();
 
-      // Work tasks HTML
-      var workHTML="";
-      if(hasWork){
-        var rows=h.work.map(function(w){
-          var wd=!!wSt[w.id];
-          return'<div class="w-row'+(wd?" done":"")+'" id="wr-'+w.id+'" data-wid="'+w.id+'" data-hid="'+h.hid+'"><div class="w-cb">'+(wd?"✓":"")+'</div><span class="w-lbl">'+w.tx+'</span></div>';
-        }).join("");
-        workHTML='<div class="exp-lbl">⚡ Tasks</div>'+rows;
+      // Row
+      var row=mk("div","hc-row");
+      row.dataset.hid=h.hid;
+      row.dataset.rid=h.id;
+      row.dataset.hw=hasExpand?"1":"0";
+
+      var left=mk("div","hc-left");
+      var tagSp=mk("span","hc-t");tagSp.id="tag-"+h.id;tagSp.textContent=h.tag;
+      var numSp=mk("span","hc-num");numSp.textContent="#"+h.n;
+      left.appendChild(tagSp);left.appendChild(numSp);
+
+      var mid=mk("div","hc-mid");
+      var nm=mk("div","hc-name");nm.textContent=h.name;
+      var ht=mk("div","hc-hint");ht.textContent=h.hint;
+      mid.appendChild(nm);mid.appendChild(ht);
+      if(hasExpand){var wtag=mk("span","hc-work-tag");wtag.textContent=(hasWork?"+ tasks ":"")+(hasNote?"+ notes":"");mid.appendChild(wtag);}
+
+      var chkWrap=mk("div","hc-chk");
+      var chk=mk("div","chk");chk.textContent=isDone?"✓":"";
+      chkWrap.appendChild(chk);
+
+      row.appendChild(left);row.appendChild(mid);row.appendChild(chkWrap);
+      card.appendChild(row);
+
+      // Expand panel
+      if(hasExpand){
+        var exp=mk("div","hc-expand");exp.id="he-"+h.id;
+        var inner=mk("div","hc-exp-inner");
+
+        if(hasWork){
+          var wlbl=mk("div","exp-lbl");wlbl.textContent="⚡ Tasks";inner.appendChild(wlbl);
+          h.work.forEach(function(w){
+            var wd=!!wSt[w.id];
+            var wr=mk("div","w-row"+(wd?" done":""));wr.id="wr-"+w.id;
+            wr.dataset.wid=w.id;wr.dataset.hid=h.hid;
+            var cb=mk("div","w-cb");cb.textContent=wd?"✓":"";
+            var wl=mk("span","w-lbl");wl.textContent=w.tx;
+            wr.appendChild(cb);wr.appendChild(wl);inner.appendChild(wr);
+          });
+        }
+
+        if(hasNote){
+          var nlbl=mk("div","exp-lbl note-lbl");nlbl.textContent="✏️ Write it down";inner.appendChild(nlbl);
+          var ta=mk("textarea","note-area");
+          ta.id="note-"+h.hid;
+          ta.placeholder=h.notePlaceholder||"Write your notes here…";
+          ta.dataset.key=noteKey;
+          try{ta.value=localStorage.getItem(noteKey)||"";}catch(e){ta.value="";}
+          inner.appendChild(ta);
+          var ndBtn=mk("button","note-done-btn"+(isDone?" note-done-active":""));
+          ndBtn.dataset.hid=h.hid;ndBtn.id="ndone-"+h.hid;
+          ndBtn.textContent=isDone?"✓ Marked Done":"Mark as Done";
+          ndBtn.addEventListener("click",function(e){e.stopPropagation();toggleHabit(ndBtn.dataset.hid);});
+          inner.appendChild(ndBtn);
+        }
+
+        exp.appendChild(inner);card.appendChild(exp);
       }
 
-      // Note / writing section HTML
-      var noteHTML="";
+      sec.appendChild(card);
+
+      // Row click
+      row.addEventListener("click",function(e){
+        if(e.target.closest(".hc-chk")){toggleHabit(h.hid);return;}
+        if(e.target.tagName==="TEXTAREA")return;
+        if(hasExpand){
+          var ep=document.getElementById("he-"+h.id);
+          if(ep)ep.classList.toggle("open");
+        } else {
+          toggleHabit(h.hid);
+        }
+      });
+
+      // Work row clicks
+      if(hasWork){
+        var wrows=inner?inner.querySelectorAll(".w-row"):[];
+        wrows.forEach(function(wr){
+          wr.addEventListener("click",function(e){
+            e.stopPropagation();
+            toggleWork(wr.dataset.wid,wr.dataset.hid,wr);
+          });
+        });
+      }
+
+      // Note textarea autosave
       if(hasNote){
-        var ph=(h.notePlaceholder||"Write your notes here…").replace(/\\/g,"").replace(/"/g,"&quot;").replace(/\n/g,"&#10;");
-        noteHTML='<div class="exp-lbl note-lbl">✏️ Write it down</div>'+
-          '<textarea class="note-area" id="note-'+h.hid+'" placeholder="'+ph+'" data-key="'+noteKey+'">'+noteVal+'</textarea>'+
+        var taEl=card.querySelector("textarea");
+        if(taEl){
+          taEl.addEventListener("input",function(){
+            try{localStorage.setItem(taEl.dataset.key,taEl.value);}catch(e){}
+          });
+        }
+      }
+    });
 
-```
-      '<button class="note-done-btn'+(isDone?" note-done-active":"")+'" data-hid="'+h.hid+'" id="ndone-'+h.hid+'">'+
-        (isDone?'✓ Marked Done':'Mark as Done')+'</button>';
-  }
-
-  // Expand panel: work + note combined
-  var expandHTML="";
-  if(hasWork||hasNote){
-    expandHTML='<div class="hc-expand" id="he-'+h.id+'"><div class="hc-exp-inner">'+workHTML+noteHTML+'</div></div>';
-  }
-
-  var hasExpand=(hasWork||hasNote)?1:0;
-
-  var safeName=h.name.replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  var safeHint=h.hint.replace(/</g,"&lt;").replace(/>/g,"&gt;");
-
-  card.innerHTML=
-    '<div class="hc-row" data-hid="'+h.hid+'" data-rid="'+h.id+'" data-hw="'+hasExpand+'">'+
-      '<div class="hc-left">'+
-        '<span class="hc-t" id="tag-'+h.id+'">'+h.tag+'</span>'+
-        '<span class="hc-num">#'+h.n+'</span>'+
-      '</div>'+
-      '<div class="hc-mid">'+
-        '<div class="hc-name">'+safeName+'</div>'+
-        '<div class="hc-hint">'+safeHint+'</div>'+
-        (hasWork||hasNote?'<span class="hc-work-tag">'+(hasWork?'+ tasks ':'')+( hasNote?'+ notes':'')+'</span>':'')+
-      '</div>'+
-      '<div class="hc-chk"><div class="chk">'+(isDone?"✓":"")+'</div></div>'+
-    '</div>'+expandHTML;
-
-  sec.appendChild(card);
-});
-c.appendChild(sec);
-```
-
-});
-
-try{
-document.getElementById(“mainCon”).addEventListener(“click”,function(e){
-var ndBtn=e.target.closest(”.note-done-btn”);
-if(ndBtn){e.stopPropagation();toggleHabit(ndBtn.dataset.hid);return;}
-var wr=e.target.closest(”.w-row”);
-if(wr&&wr.dataset.wid){e.stopPropagation();toggleWork(wr.dataset.wid,wr.dataset.hid,wr);return;}
-if(e.target.tagName===“TEXTAREA”)return;
-var row=e.target.closest(”.hc-row”);
-if(!row||!row.dataset.hid)return;
-if(e.target.closest(”.hc-chk”)){
-toggleHabit(row.dataset.hid);
-} else if(row.dataset.hw===“1”){
-var exp=document.getElementById(“he-”+row.dataset.rid);
-if(exp)exp.classList.toggle(“open”);
-} else {
-toggleHabit(row.dataset.hid);
-}
-});
-document.getElementById(“mainCon”).addEventListener(“input”,function(e){
-if(e.target.tagName===“TEXTAREA”&&e.target.dataset.key){
-localStorage.setItem(e.target.dataset.key,e.target.value);
-}
-});
-}catch(e){}
+    c.appendChild(sec);
+  });
 }
 
 function renderStreak(){
-var row=document.getElementById(“streakRow”);row.innerHTML=””;
-for(var d=1;d<=10;d++){
-var pip=document.createElement(“div”);pip.className=“s-pip”;pip.textContent=d;
-var p=dayPct(d);
-if(p>=100)pip.classList.add(“full”);
-else if(p>0)pip.classList.add(“partial”);
-row.appendChild(pip);
-}
+  var row=document.getElementById("streakRow");row.innerHTML="";
+  for(var d=1;d<=10;d++){
+    var pip=document.createElement("div");pip.className="s-pip";pip.textContent=d;
+    var p=dayPct(d);
+    if(p>=100)pip.classList.add("full");
+    else if(p>0)pip.classList.add("partial");
+    row.appendChild(pip);
+  }
 }
 
 function updateProg(){
-var done=doneCount(),total=42;
-var pct=Math.round(done/total*100);
-document.getElementById(“ringPct”).textContent=pct+”%”;
-document.getElementById(“doneC”).textContent=done;
-document.getElementById(“totalC”).textContent=total;
-document.getElementById(“tbDone”).textContent=done;
-document.getElementById(“tbLeft”).textContent=total-done;
-document.getElementById(“tbDay”).textContent=“D”+day;
-document.getElementById(“gFill”).style.width=pct+”%”;
-// circumference 2*pi*41 ≈ 258
-document.getElementById(“ringFg”).style.strokeDashoffset=258-(pct/100)*258;
-document.getElementById(“congrats”).classList.toggle(“show”,done===total);
-BLOCKS.forEach(function(blk){
-var el=document.getElementById(“pc-”+blk.id);
-if(!el)return;
-var uids=[];blk.habits.forEach(function(h){if(UNIQUE_IDS.indexOf(h.hid)>-1&&uids.indexOf(h.hid)<0)uids.push(h.hid);});
-var dn=uids.filter(function(id){return hSt[id];}).length;
-el.textContent=dn+”/”+uids.length;
-});
+  var done=doneCount(),total=42;
+  var pct=Math.round(done/total*100);
+  document.getElementById("ringPct").textContent=pct+"%";
+  document.getElementById("doneC").textContent=done;
+  document.getElementById("totalC").textContent=total;
+  document.getElementById("tbDone").textContent=done;
+  document.getElementById("tbLeft").textContent=total-done;
+  document.getElementById("tbDay").textContent="D"+day;
+  document.getElementById("gFill").style.width=pct+"%";
+  // circumference 2*pi*41 ≈ 258
+  document.getElementById("ringFg").style.strokeDashoffset=258-(pct/100)*258;
+  document.getElementById("congrats").classList.toggle("show",done===total);
+  BLOCKS.forEach(function(blk){
+    var el=document.getElementById("pc-"+blk.id);
+    if(!el)return;
+    var uids=[];blk.habits.forEach(function(h){if(UNIQUE_IDS.indexOf(h.hid)>-1&&uids.indexOf(h.hid)<0)uids.push(h.hid);});
+    var dn=uids.filter(function(id){return hSt[id];}).length;
+    el.textContent=dn+"/"+uids.length;
+  });
 }
 
 // ════════════ TOGGLE ════════════
 function toggleHabit(hid){
-var was=!!hSt[hid];hSt[hid]=!was;save();
-BLOCKS.forEach(function(blk){blk.habits.forEach(function(h){
-if(h.hid===hid){
-var card=document.getElementById(“hc-”+h.id);
-if(card){
-card.classList.toggle(“done”,!was);
-var c=card.querySelector(”.chk”);if(c)c.textContent=!was?“✓”:””;
-var nb=document.getElementById(“ndone-”+h.hid);
-if(nb){nb.textContent=!was?“✓ Marked Done”:“Mark as Done”;nb.classList.toggle(“note-done-active”,!was);}
-}
-}
-});});
-updateProg();renderNav();renderStreak();
-if(!was){
-var nm=””;BLOCKS.forEach(function(b){b.habits.forEach(function(h){if(h.hid===hid&&!nm)nm=h.name;});});
-showToast(“✓ “+nm.substring(0,32));
-}
+  var was=!!hSt[hid];hSt[hid]=!was;save();
+  BLOCKS.forEach(function(blk){blk.habits.forEach(function(h){
+    if(h.hid===hid){
+      var card=document.getElementById("hc-"+h.id);
+      if(card){
+        card.classList.toggle("done",!was);
+        var c=card.querySelector(".chk");if(c)c.textContent=!was?"✓":"";
+        var nb=document.getElementById("ndone-"+h.hid);
+        if(nb){nb.textContent=!was?"✓ Marked Done":"Mark as Done";nb.classList.toggle("note-done-active",!was);}
+      }
+    }
+  });});
+  updateProg();renderNav();renderStreak();
+  if(!was){
+    var nm="";BLOCKS.forEach(function(b){b.habits.forEach(function(h){if(h.hid===hid&&!nm)nm=h.name;});});
+    showToast("✓ "+nm.substring(0,32));
+  }
 }
 
 function toggleWork(wid,hid,el){
-var was=!!wSt[wid];wSt[wid]=!was;
-el.classList.toggle(“done”,!was);
-var cb=el.querySelector(”.w-cb”);if(cb)cb.textContent=!was?“✓”:””;
-save();
-var allDone=true;
-BLOCKS.forEach(function(b){b.habits.forEach(function(h){
-if(h.hid===hid&&h.work&&h.work.length)h.work.forEach(function(w){if(!wSt[w.id])allDone=false;});
-});});
-if(allDone&&!hSt[hid])toggleHabit(hid);
+  var was=!!wSt[wid];wSt[wid]=!was;
+  el.classList.toggle("done",!was);
+  var cb=el.querySelector(".w-cb");if(cb)cb.textContent=!was?"✓":"";
+  save();
+  var allDone=true;
+  BLOCKS.forEach(function(b){b.habits.forEach(function(h){
+    if(h.hid===hid&&h.work&&h.work.length)h.work.forEach(function(w){if(!wSt[w.id])allDone=false;});
+  });});
+  if(allDone&&!hSt[hid])toggleHabit(hid);
 }
 
 // ════════════ SEARCH ════════════
 function doSearch(q){
-q=q.trim().toLowerCase();
-document.getElementById(“searchClear”).classList.toggle(“show”,q.length>0);
-var all=document.querySelectorAll(”.hcard”);
-all.forEach(function(card){
-if(!q){card.classList.remove(“search-match”,“search-hidden”);return;}
-var num=card.dataset.hnum||””;
-var nm=card.dataset.hname||””;
-var match=num===q||nm.indexOf(q)>-1||(”#”+num).indexOf(q)>-1;
-card.classList.toggle(“search-match”,match);
-card.classList.toggle(“search-hidden”,!match);
-});
+  q=q.trim().toLowerCase();
+  document.getElementById("searchClear").classList.toggle("show",q.length>0);
+  var all=document.querySelectorAll(".hcard");
+  all.forEach(function(card){
+    if(!q){card.classList.remove("search-match","search-hidden");return;}
+    var num=card.dataset.hnum||"";
+    var nm=card.dataset.hname||"";
+    var match=num===q||nm.indexOf(q)>-1||("#"+num).indexOf(q)>-1;
+    card.classList.toggle("search-match",match);
+    card.classList.toggle("search-hidden",!match);
+  });
 }
 
 // ════════════ CLOCK ════════════
 function toMin(s){
-if(!s)return -1;
-var m=s.match(/(\d+):(\d+)\s*(AM|PM)/i);if(!m)return -1;
-var h=parseInt(m[1]),mn=parseInt(m[2]),ap=m[3].toUpperCase();
-if(ap===“PM”&&h!==12)h+=12;if(ap===“AM”&&h===12)h=0;
-return h*60+mn;
+  if(!s)return -1;
+  var m=s.match(/(\d+):(\d+)\s*(AM|PM)/i);if(!m)return -1;
+  var h=parseInt(m[1]),mn=parseInt(m[2]),ap=m[3].toUpperCase();
+  if(ap==="PM"&&h!==12)h+=12;if(ap==="AM"&&h===12)h=0;
+  return h*60+mn;
 }
 function nowMin(){var n=new Date();return n.getHours()*60+n.getMinutes();}
 
 function highlightNow(){
-var now=nowMin();var cur=null;
-BLOCKS.forEach(function(blk){blk.habits.forEach(function(h){
-var card=document.getElementById(“hc-”+h.id);
-var hm=toMin(h.tag);
-var act=hm>0&&now>=hm&&now<hm+25&&!hSt[h.hid];
-if(card)card.classList.toggle(“now”,act);
-if(act&&!cur)cur=h;
-});});
-var banner=document.getElementById(“curBanner”);
-if(cur){banner.classList.add(“show”);document.getElementById(“cbTx”).textContent=”#”+cur.n+” “+cur.name;}
-else banner.classList.remove(“show”);
-if(cur&&cur.id!==lastRem&&!hSt[cur.hid]){lastRem=cur.id;popHid=cur;showPopup(cur);}
+  var now=nowMin();var cur=null;
+  BLOCKS.forEach(function(blk){blk.habits.forEach(function(h){
+    var card=document.getElementById("hc-"+h.id);
+    var hm=toMin(h.tag);
+    var act=hm>0&&now>=hm&&now<hm+25&&!hSt[h.hid];
+    if(card)card.classList.toggle("now",act);
+    if(act&&!cur)cur=h;
+  });});
+  var banner=document.getElementById("curBanner");
+  if(cur){banner.classList.add("show");document.getElementById("cbTx").textContent="#"+cur.n+" "+cur.name;}
+  else banner.classList.remove("show");
+  if(cur&&cur.id!==lastRem&&!hSt[cur.hid]){lastRem=cur.id;popHid=cur;showPopup(cur);}
 }
 
 function tick(){
-var n=new Date();function p(x){return x.toString().padStart(2,“0”);}
-document.getElementById(“tbClk”).textContent=p(n.getHours())+”:”+p(n.getMinutes())+”:”+p(n.getSeconds());
-document.getElementById(“tbDt”).textContent=“March 2026 — Day “+day;
+  var n=new Date();function p(x){return x.toString().padStart(2,"0");}
+  document.getElementById("tbClk").textContent=p(n.getHours())+":"+p(n.getMinutes())+":"+p(n.getSeconds());
+  document.getElementById("tbDt").textContent="March 2026 — Day "+day;
 }
 
 // ════════════ REPORT ════════════
 function showReport(){
-var panel=document.getElementById(“reportPanel”);
-panel.classList.add(“show”);
-var grid=document.getElementById(“rpGrid”);grid.innerHTML=””;
-var total=0,days=0;
-for(var d=1;d<=10;d++){
-var p=dayPct(d);
-if(p>0){total+=p;days++;}
-var div=document.createElement(“div”);div.className=“rp-day”;
-var cls=p>=80?“great”:p>=40?“ok”:””;
-div.innerHTML=’<div class="rp-dn">Day ‘+d+’</div><div class="rp-pct '+cls+'">’+p+’%</div>’;
-grid.appendChild(div);
-}
-var avg=days?Math.round(total/days):0;
-var best=0,bestD=0;
-for(var d=1;d<=10;d++){var p2=dayPct(d);if(p2>best){best=p2;bestD=d;}}
-var sum=document.getElementById(“rpSummary”);
-var msg=””;
-if(days===0)msg=“No tracking data yet. Start Day 1 and come back!”;
-else{
-msg=“📅 Days tracked: “+days+”/10\n”;
-msg+=“📊 Average completion: “+avg+”%\n”;
-if(bestD)msg+=“🏆 Best day: Day “+bestD+” (”+best+”%)\n”;
-if(avg>=80)msg+=”\n🔥 Excellent! You are living the Life Clock. Keep this standard.”;
-else if(avg>=50)msg+=”\n⚡ Good progress. Push harder on the morning blocks — they set the tone.”;
-else msg+=”\n💡 Focus on consistency over perfection. Start with the 5 prayers and 3 identity habits.”;
-}
-sum.style.whiteSpace=“pre-line”;sum.textContent=msg;
-setTimeout(function(){panel.scrollIntoView({behavior:“smooth”});},100);
+  var panel=document.getElementById("reportPanel");
+  panel.classList.add("show");
+  var grid=document.getElementById("rpGrid");grid.innerHTML="";
+  var total=0,days=0;
+  for(var d=1;d<=10;d++){
+    var p=dayPct(d);
+    if(p>0){total+=p;days++;}
+    var div=document.createElement("div");div.className="rp-day";
+    var cls=p>=80?"great":p>=40?"ok":"";
+    div.innerHTML='<div class="rp-dn">Day '+d+'</div><div class="rp-pct '+cls+'">'+p+'%</div>';
+    grid.appendChild(div);
+  }
+  var avg=days?Math.round(total/days):0;
+  var best=0,bestD=0;
+  for(var d=1;d<=10;d++){var p2=dayPct(d);if(p2>best){best=p2;bestD=d;}}
+  var sum=document.getElementById("rpSummary");
+  var msg="";
+  if(days===0)msg="No tracking data yet. Start Day 1 and come back!";
+  else{
+    msg="📅 Days tracked: "+days+"/10\n";
+    msg+="📊 Average completion: "+avg+"%\n";
+    if(bestD)msg+="🏆 Best day: Day "+bestD+" ("+best+"%)\n";
+    if(avg>=80)msg+="\n🔥 Excellent! You are living the Life Clock. Keep this standard.";
+    else if(avg>=50)msg+="\n⚡ Good progress. Push harder on the morning blocks — they set the tone.";
+    else msg+="\n💡 Focus on consistency over perfection. Start with the 5 prayers and 3 identity habits.";
+  }
+  sum.style.whiteSpace="pre-line";sum.textContent=msg;
+  setTimeout(function(){panel.scrollIntoView({behavior:"smooth"});},100);
 }
 
 // ════════════ MENTOR AGENT ════════════
 var mentorHistory=[];
-var MENTOR_KEY=“lc7_mentor”;
+var MENTOR_KEY="lc7_mentor";
 
 function loadMentorHistory(){
-try{mentorHistory=JSON.parse(localStorage.getItem(MENTOR_KEY)||”[]”);}
-catch(e){mentorHistory=[];}
+  try{mentorHistory=JSON.parse(localStorage.getItem(MENTOR_KEY)||"[]");}
+  catch(e){mentorHistory=[];}
 }
 function saveMentorHistory(){
-try{localStorage.setItem(MENTOR_KEY,JSON.stringify(mentorHistory.slice(-40)));}
-catch(e){}
+  try{localStorage.setItem(MENTOR_KEY,JSON.stringify(mentorHistory.slice(-40)));}
+  catch(e){}
 }
 
 function openMentor(){
-loadMentorHistory();
-var overlay=document.getElementById(“mentorOverlay”);
-overlay.classList.add(“show”);
-var msgs=document.getElementById(“mentorMsgs”);msgs.innerHTML=””;
-if(mentorHistory.length===0){
-// greeting with progress context
-var done=doneCount();
-var greeting=“As-salamu alaykum! I’m your Coach Kanchon AI Mentor. 🧠\n\nToday (Day “+day+”) you’ve completed “+done+”/42 habits (”+Math.round(done/42*100)+”%).\n\n”;
-if(done===0)greeting+=“You haven’t started tracking today yet. Let’s begin — tap any habit to mark it done.\n\nWhat’s your biggest challenge right now?”;
-else if(done<15)greeting+=“You’ve made a start. Focus next on completing your physical power block and prayers. What’s holding you back?”;
-else if(done<30)greeting+=“Good progress! You’re halfway. Which block do you want to push harder on?”;
-else greeting+=“Strong day! You’re “+done+” habits in. Let’s make sure you close the day strong. Any blockers?”;
-addMentorMsg(“bot”,greeting);
-mentorHistory.push({role:“bot”,text:greeting});
-saveMentorHistory();
-} else {
-mentorHistory.forEach(function(m){addMentorMsg(m.role,m.text);});
-}
-setTimeout(function(){msgs.scrollTop=msgs.scrollHeight;},100);
+  loadMentorHistory();
+  var overlay=document.getElementById("mentorOverlay");
+  overlay.classList.add("show");
+  var msgs=document.getElementById("mentorMsgs");msgs.innerHTML="";
+  if(mentorHistory.length===0){
+    // greeting with progress context
+    var done=doneCount();
+    var greeting="As-salamu alaykum! I'm your Coach Kanchon AI Mentor. 🧠\n\nToday (Day "+day+") you've completed "+done+"/42 habits ("+Math.round(done/42*100)+"%).\n\n";
+    if(done===0)greeting+="You haven't started tracking today yet. Let's begin — tap any habit to mark it done.\n\nWhat's your biggest challenge right now?";
+    else if(done<15)greeting+="You've made a start. Focus next on completing your physical power block and prayers. What's holding you back?";
+    else if(done<30)greeting+="Good progress! You're halfway. Which block do you want to push harder on?";
+    else greeting+="Strong day! You're "+done+" habits in. Let's make sure you close the day strong. Any blockers?";
+    addMentorMsg("bot",greeting);
+    mentorHistory.push({role:"bot",text:greeting});
+    saveMentorHistory();
+  } else {
+    mentorHistory.forEach(function(m){addMentorMsg(m.role,m.text);});
+  }
+  setTimeout(function(){msgs.scrollTop=msgs.scrollHeight;},100);
 }
 
 function addMentorMsg(role,text){
-var msgs=document.getElementById(“mentorMsgs”);
-var div=document.createElement(“div”);
-div.className=“msg “+role;
-div.textContent=text;
-msgs.appendChild(div);
-msgs.scrollTop=msgs.scrollHeight;
+  var msgs=document.getElementById("mentorMsgs");
+  var div=document.createElement("div");
+  div.className="msg "+role;
+  div.textContent=text;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
 }
 
 function sendMentor(){
-var inp=document.getElementById(“mentorInput”);
-var txt=inp.value.trim();if(!txt)return;
-inp.value=””;
-addMentorMsg(“user”,txt);
-mentorHistory.push({role:“user”,text:txt});
+  var inp=document.getElementById("mentorInput");
+  var txt=inp.value.trim();if(!txt)return;
+  inp.value="";
+  addMentorMsg("user",txt);
+  mentorHistory.push({role:"user",text:txt});
 
-// typing indicator
-var msgs=document.getElementById(“mentorMsgs”);
-var typing=document.createElement(“div”);
-typing.className=“msg bot typing”;typing.textContent=“Coach is thinking…”;
-msgs.appendChild(typing);msgs.scrollTop=msgs.scrollHeight;
+  // typing indicator
+  var msgs=document.getElementById("mentorMsgs");
+  var typing=document.createElement("div");
+  typing.className="msg bot typing";typing.textContent="Coach is thinking…";
+  msgs.appendChild(typing);msgs.scrollTop=msgs.scrollHeight;
 
-// build progress context
-var done=doneCount();
-var prayerDone=[“h36”,“h37”,“h38”].filter(function(id){return hSt[id];}).length;
-var workDone=[“h17”,“h18”,“h19”,“h20”,“h21”,“h22”].filter(function(id){return hSt[id];}).length;
-var phyDone=[“h10”,“h11”,“h12”,“h13”,“h14”,“h15”,“h16”].filter(function(id){return hSt[id];}).length;
-var dayPcts=[];for(var d=1;d<=10;d++)dayPcts.push(“D”+d+”:”+dayPct(d)+”%”);
+  // build progress context
+  var done=doneCount();
+  var prayerDone=["h36","h37","h38"].filter(function(id){return hSt[id];}).length;
+  var workDone=["h17","h18","h19","h20","h21","h22"].filter(function(id){return hSt[id];}).length;
+  var phyDone=["h10","h11","h12","h13","h14","h15","h16"].filter(function(id){return hSt[id];}).length;
+  var dayPcts=[];for(var d=1;d<=10;d++)dayPcts.push("D"+d+":"+dayPct(d)+"%");
 
-var systemPrompt=“You are Coach Kanchon AI, a strict but caring life mentor for an eCommerce CEO using the Life Clock 42-habit framework. The 10-day focus phase goal is: ‘I AM Disciplined’ with a primary target of Reach ₹50 daily sales. Be concise, direct, motivating. Use the data to give specific actionable feedback. Don’t be generic. Max 120 words per reply.\n\nUser’s current data:\n- Today: Day “+day+”, “+done+”/42 habits done (”+Math.round(done/42*100)+”%)\n- Prayers done today: “+prayerDone+”/3 (Fajr, Dhikr, Quran)\n- Work habits done: “+workDone+”/6\n- Physical habits done: “+phyDone+”/7\n- 10-day overview: “+dayPcts.join(”, “);
+  var systemPrompt="You are Coach Kanchon AI, a strict but caring life mentor for an eCommerce CEO using the Life Clock 42-habit framework. The 10-day focus phase goal is: 'I AM Disciplined' with a primary target of Reach ₹50 daily sales. Be concise, direct, motivating. Use the data to give specific actionable feedback. Don't be generic. Max 120 words per reply.\n\nUser's current data:\n- Today: Day "+day+", "+done+"/42 habits done ("+Math.round(done/42*100)+"%)\n- Prayers done today: "+prayerDone+"/3 (Fajr, Dhikr, Quran)\n- Work habits done: "+workDone+"/6\n- Physical habits done: "+phyDone+"/7\n- 10-day overview: "+dayPcts.join(", ");
 
-var messages=[{role:“user”,content:systemPrompt+”\n\nUser says: “+txt}];
+  var messages=[{role:"user",content:systemPrompt+"\n\nUser says: "+txt}];
 
-fetch(“https://api.anthropic.com/v1/messages”,{
-method:“POST”,
-headers:{“Content-Type”:“application/json”},
-body:JSON.stringify({
-model:“claude-sonnet-4-20250514”,
-max_tokens:200,
-messages:messages
-})
-}).then(function(r){return r.json();}).then(function(data){
-typing.remove();
-var reply=””;
-if(data.content&&data.content[0]&&data.content[0].text){
-reply=data.content[0].text;
-} else if(data.error){
-reply=“⚠ Mentor offline right now. Your data is saved. Keep tracking — I’ll be back!”;
-}
-addMentorMsg(“bot”,reply);
-mentorHistory.push({role:“bot”,text:reply});
-saveMentorHistory();
-}).catch(function(){
-typing.remove();
-// fallback offline mentor
-var fallback=getOfflineMentorReply(txt,done,prayerDone);
-addMentorMsg(“bot”,fallback);
-mentorHistory.push({role:“bot”,text:fallback});
-saveMentorHistory();
-});
+  fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      model:"claude-sonnet-4-20250514",
+      max_tokens:200,
+      messages:messages
+    })
+  }).then(function(r){return r.json();}).then(function(data){
+    typing.remove();
+    var reply="";
+    if(data.content&&data.content[0]&&data.content[0].text){
+      reply=data.content[0].text;
+    } else if(data.error){
+      reply="⚠ Mentor offline right now. Your data is saved. Keep tracking — I'll be back!";
+    }
+    addMentorMsg("bot",reply);
+    mentorHistory.push({role:"bot",text:reply});
+    saveMentorHistory();
+  }).catch(function(){
+    typing.remove();
+    // fallback offline mentor
+    var fallback=getOfflineMentorReply(txt,done,prayerDone);
+    addMentorMsg("bot",fallback);
+    mentorHistory.push({role:"bot",text:fallback});
+    saveMentorHistory();
+  });
 }
 
 function getOfflineMentorReply(q,done,prayers){
-q=q.toLowerCase();
-if(q.indexOf(“prayer”)>-1||q.indexOf(“fajr”)>-1)
-return “Prayer is the foundation. If you miss Fajr, the whole day tilts. Set your alarm now for 5:00 AM. No negotiation with Allah’s time. ✅”;
-if(q.indexOf(“sales”)>-1||q.indexOf(“revenue”)>-1||q.indexOf(“ads”)>-1)
-return “Check your ROAS daily. Your Big 3 Moves drive revenue — are they done? Scale what’s working. Cut what isn’t. Numbers don’t lie. 📊”;
-if(q.indexOf(“lazy”)>-1||q.indexOf(“motivation”)>-1||q.indexOf(“tired”)>-1)
-return “Say it now: I AM Disciplined. Motivation is a guest — discipline is the host. You have “+done+”/42 done. What’s your next habit? Go. ⚡”;
-if(q.indexOf(“sleep”)>-1)
-return “10 PM lights out. 5 AM wake up. That’s 7 hours — your CEO superpower. Everything else follows from this. Protect your sleep like your revenue.”;
-if(done>=35)
-return “Outstanding! “+done+”/42 habits — you’re living the Life Clock. Finish strong. Log your Happiness Score tonight. 🏆”;
-if(done<10)
-return “Only “+done+” habits done. Start with the 5 prayers — they anchor everything. Then identity block. Then physical. One by one. You’ve got this. 💪”;
-return “You have “+done+”/42 habits done today. Focus on what’s undone. The Life Clock doesn’t wait. Every habit is a vote for the CEO you’re becoming. 🧠”;
+  q=q.toLowerCase();
+  if(q.indexOf("prayer")>-1||q.indexOf("fajr")>-1)
+    return "Prayer is the foundation. If you miss Fajr, the whole day tilts. Set your alarm now for 5:00 AM. No negotiation with Allah's time. ✅";
+  if(q.indexOf("sales")>-1||q.indexOf("revenue")>-1||q.indexOf("ads")>-1)
+    return "Check your ROAS daily. Your Big 3 Moves drive revenue — are they done? Scale what's working. Cut what isn't. Numbers don't lie. 📊";
+  if(q.indexOf("lazy")>-1||q.indexOf("motivation")>-1||q.indexOf("tired")>-1)
+    return "Say it now: I AM Disciplined. Motivation is a guest — discipline is the host. You have "+done+"/42 done. What's your next habit? Go. ⚡";
+  if(q.indexOf("sleep")>-1)
+    return "10 PM lights out. 5 AM wake up. That's 7 hours — your CEO superpower. Everything else follows from this. Protect your sleep like your revenue.";
+  if(done>=35)
+    return "Outstanding! "+done+"/42 habits — you're living the Life Clock. Finish strong. Log your Happiness Score tonight. 🏆";
+  if(done<10)
+    return "Only "+done+" habits done. Start with the 5 prayers — they anchor everything. Then identity block. Then physical. One by one. You've got this. 💪";
+  return "You have "+done+"/42 habits done today. Focus on what's undone. The Life Clock doesn't wait. Every habit is a vote for the CEO you're becoming. 🧠";
 }
 
 // ════════════ PRAYER TIME EDITOR ════════════
 // Single popup — shows only the 5 actual prayers (prayerEdit:true)
 // After saving, every block re-sorts its habits by time
-var PRAYER_TIMES_KEY=“lc7_prayer_times”;
+var PRAYER_TIMES_KEY="lc7_prayer_times";
 var prayerTimes={};
 
 function loadPrayerTimes(){
-try{prayerTimes=JSON.parse(localStorage.getItem(PRAYER_TIMES_KEY)||”{}”);}catch(e){prayerTimes={};}
-// Only apply and rebuild if user has actually saved custom prayer times
-if(Object.keys(prayerTimes).length===0)return;
-// Apply saved prayer times to prayer habits
-BLOCKS.forEach(function(blk){
-blk.habits.forEach(function(h){
-if(h.prayerEdit&&prayerTimes[h.hid])h.tag=prayerTimes[h.hid];
-});
-});
-// Rebuild entire schedule from those prayer times
-rebuildSchedule();
+  try{prayerTimes=JSON.parse(localStorage.getItem(PRAYER_TIMES_KEY)||"{}");}catch(e){prayerTimes={};}
+  // Only apply and rebuild if user has actually saved custom prayer times
+  if(Object.keys(prayerTimes).length===0)return;
+  // Apply saved prayer times to prayer habits
+  BLOCKS.forEach(function(blk){
+    blk.habits.forEach(function(h){
+      if(h.prayerEdit&&prayerTimes[h.hid])h.tag=prayerTimes[h.hid];
+    });
+  });
+  // Rebuild entire schedule from those prayer times
+  rebuildSchedule();
 }
 
 function closeEditPopup(){
-document.getElementById(“editOverlay”).classList.remove(“show”);
+  document.getElementById("editOverlay").classList.remove("show");
 }
 
 function editPrayerTimes(){
-var prayers=[];
-BLOCKS.forEach(function(blk){
-blk.habits.forEach(function(h){if(h.prayerEdit)prayers.push(h);});
-});
+  var prayers=[];
+  BLOCKS.forEach(function(blk){
+    blk.habits.forEach(function(h){if(h.prayerEdit)prayers.push(h);});
+  });
 
-var html=’<div class="pe-box">’;
-html+=’<div class="pe-title">🕌 Prayer Times</div>’;
-html+=’<div class="pe-sub">Set your prayer times — habits will auto-reorder</div>’;
-prayers.forEach(function(h){
-html+=’<div class="pe-row">’;
-html+=’<label class="pe-lbl">’+h.name+’</label>’;
-html+=’<input type="time" id="pt_'+h.hid+'" class="pe-inp" value="'+timeToInput(h.tag)+'">’;
-html+=’</div>’;
-});
-html+=’<div class="pe-btns">’;
-html+=’<button class="pe-save" id="peSaveBtn">Save & Reorder</button>’;
-html+=’<button class="pe-cancel" id="peCancelBtn">Cancel</button>’;
-html+=’</div></div>’;
+  var html='<div class="pe-box">';
+  html+='<div class="pe-title">🕌 Prayer Times</div>';
+  html+='<div class="pe-sub">Set your prayer times — habits will auto-reorder</div>';
+  prayers.forEach(function(h){
+    html+='<div class="pe-row">';
+    html+='<label class="pe-lbl">'+h.name+'</label>';
+    html+='<input type="time" id="pt_'+h.hid+'" class="pe-inp" value="'+timeToInput(h.tag)+'">';
+    html+='</div>';
+  });
+  html+='<div class="pe-btns">';
+  html+='<button class="pe-save" id="peSaveBtn">Save & Reorder</button>';
+  html+='<button class="pe-cancel" id="peCancelBtn">Cancel</button>';
+  html+='</div></div>';
 
-document.getElementById(“editBox”).innerHTML=html;
-document.getElementById(“editOverlay”).classList.add(“show”);
+  document.getElementById("editBox").innerHTML=html;
+  document.getElementById("editOverlay").classList.add("show");
 
-// Use event listeners — not inline onclick (fails in sandboxed iframe)
-document.getElementById(“peSaveBtn”).addEventListener(“click”, savePrayerTimes);
-document.getElementById(“peCancelBtn”).addEventListener(“click”, closeEditPopup);
+  // Use event listeners — not inline onclick (fails in sandboxed iframe)
+  document.getElementById("peSaveBtn").addEventListener("click", savePrayerTimes);
+  document.getElementById("peCancelBtn").addEventListener("click", closeEditPopup);
 }
 
-// Convert “5:15 AM” → “05:15” for <input type=time>
+// Convert "5:15 AM" → "05:15" for <input type=time>
 function timeToInput(tag){
-if(!tag)return “”;
-var m=tag.match(/(\d+):(\d+)\s*(AM|PM)/i);
-if(!m)return “”;
-var h=parseInt(m[1]),mn=parseInt(m[2]),ap=m[3].toUpperCase();
-if(ap===“PM”&&h!==12)h+=12;
-if(ap===“AM”&&h===12)h=0;
-return (h<10?“0”:””)+h+”:”+(mn<10?“0”:””)+mn;
+  if(!tag)return "";
+  var m=tag.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if(!m)return "";
+  var h=parseInt(m[1]),mn=parseInt(m[2]),ap=m[3].toUpperCase();
+  if(ap==="PM"&&h!==12)h+=12;
+  if(ap==="AM"&&h===12)h=0;
+  return (h<10?"0":"")+h+":"+(mn<10?"0":"")+mn;
 }
 
-// Convert “05:15” → “5:15 AM”
+// Convert "05:15" → "5:15 AM"
 function inputToTime(val){
-if(!val||val.indexOf(”:”)<0)return “”;
-var parts=val.split(”:”);
-if(parts.length<2)return “”;
-var h=parseInt(parts[0]),mn=parseInt(parts[1]);
-if(isNaN(h)||isNaN(mn))return “”;
-var ap=h>=12?“PM”:“AM”;
-var h12=h%12||12;
-return h12+”:”+(mn<10?“0”:””)+mn+” “+ap;
+  if(!val||val.indexOf(":")<0)return "";
+  var parts=val.split(":");
+  if(parts.length<2)return "";
+  var h=parseInt(parts[0]),mn=parseInt(parts[1]);
+  if(isNaN(h)||isNaN(mn))return "";
+  var ap=h>=12?"PM":"AM";
+  var h12=h%12||12;
+  return h12+":"+(mn<10?"0":"")+mn+" "+ap;
 }
 
 function savePrayerTimes(){
-var prayers=[];
-BLOCKS.forEach(function(blk){
-blk.habits.forEach(function(h){if(h.prayerEdit)prayers.push(h);});
-});
+  var prayers=[];
+  BLOCKS.forEach(function(blk){
+    blk.habits.forEach(function(h){if(h.prayerEdit)prayers.push(h);});
+  });
 
-var changed=false;
-prayers.forEach(function(h){
-var inp=document.getElementById(“pt_”+h.hid);
-if(!inp||!inp.value)return;
-var newTime=inputToTime(inp.value);
-if(!newTime)return;
-if(newTime!==h.tag){h.tag=newTime;prayerTimes[h.hid]=newTime;changed=true;}
-});
+  var changed=false;
+  prayers.forEach(function(h){
+    var inp=document.getElementById("pt_"+h.hid);
+    if(!inp||!inp.value)return;
+    var newTime=inputToTime(inp.value);
+    if(!newTime)return;
+    if(newTime!==h.tag){h.tag=newTime;prayerTimes[h.hid]=newTime;changed=true;}
+  });
 
-try{localStorage.setItem(PRAYER_TIMES_KEY,JSON.stringify(prayerTimes));}catch(e){}
-closeEditPopup();
-rebuildSchedule();
-renderAll();
-showToast(“✓ Prayer times saved — schedule rebuilt”,“info”);
+  try{localStorage.setItem(PRAYER_TIMES_KEY,JSON.stringify(prayerTimes));}catch(e){}
+  closeEditPopup();
+  rebuildSchedule();
+  renderAll();
+  showToast("✓ Prayer times saved — schedule rebuilt","info");
 }
 
 // ════════════ AUTO-SCHEDULE ENGINE ════════════
 // All times flow from the 5 prayers.
 // offsets are in minutes from the anchor prayer.
 function minToTime(m){
-if(m<0)m+=1440;
-var h=Math.floor(m/60)%24,mn=m%60;
-var ap=h>=12?“PM”:“AM”;
-var h12=h%12||12;
-return h12+”:”+(mn<10?“0”:””)+mn+” “+ap;
+  if(m<0)m+=1440;
+  var h=Math.floor(m/60)%24,mn=m%60;
+  var ap=h>=12?"PM":"AM";
+  var h12=h%12||12;
+  return h12+":"+(mn<10?"0":"")+mn+" "+ap;
 }
 
 function rebuildSchedule(){
-// Get current prayer times in minutes
-function getPMin(hid){
-var t=””;
-BLOCKS.forEach(function(b){b.habits.forEach(function(h){if(h.hid===hid)t=h.tag;});});
-return toMin(t);
-}
-var fajr   = getPMin(“p_fajr”);
-var dhuhr  = getPMin(“p_dhuhr”);
-var asr    = getPMin(“p_asr”);
-var maghrib= getPMin(“p_maghrib”);
-var isha   = getPMin(“p_isha”);
+  // Get current prayer times in minutes
+  function getPMin(hid){
+    var t="";
+    BLOCKS.forEach(function(b){b.habits.forEach(function(h){if(h.hid===hid)t=h.tag;});});
+    return toMin(t);
+  }
+  var fajr   = getPMin("p_fajr");
+  var dhuhr  = getPMin("p_dhuhr");
+  var asr    = getPMin("p_asr");
+  var maghrib= getPMin("p_maghrib");
+  var isha   = getPMin("p_isha");
 
-// Safety: if any prayer time is invalid, don’t rebuild
-if(fajr<0||dhuhr<0||asr<0||maghrib<0||isha<0)return;
+  // Safety: if any prayer time is invalid, don't rebuild
+  if(fajr<0||dhuhr<0||asr<0||maghrib<0||isha<0)return;
 
-// Helper to set a habit’s time by hid
-function setT(hid, min){ BLOCKS.forEach(function(b){b.habits.forEach(function(h){if(h.hid===hid)h.tag=minToTime(min);});}); }
+  // Helper to set a habit's time by hid
+  function setT(hid, min){ BLOCKS.forEach(function(b){b.habits.forEach(function(h){if(h.hid===hid)h.tag=minToTime(min);});}); }
 
-// ── FAJR BLOCK: identity habits follow Fajr ──
-setT(“p_fajr_dhikr”,  fajr+20);
-setT(“p_fajr_quran”,  fajr+25);
-setT(“p_power_decl”,  fajr+35);
-setT(“p_mind_movie”,  fajr+38);
-setT(“p_power_pose”,  fajr+40);
-setT(“p_gratitude”,   fajr+43);
-setT(“p_good_deed_int”,fajr+47);
+  // ── FAJR BLOCK: identity habits follow Fajr ──
+  setT("p_fajr_dhikr",  fajr+20);
+  setT("p_fajr_quran",  fajr+25);
+  setT("p_power_decl",  fajr+35);
+  setT("p_mind_movie",  fajr+38);
+  setT("p_power_pose",  fajr+40);
+  setT("p_gratitude",   fajr+43);
+  setT("p_good_deed_int",fajr+47);
 
-// ── PHYSICAL POWER: starts 60 min after Fajr ──
-var phys = fajr+60;
-setT(“p_body_weight”,  phys);
-setT(“p_hydrate”,      phys+2);
-setT(“p_exercise”,     phys+5);
-setT(“p_barefoot”,     phys+35);
-setT(“p_nature”,       phys+38);
-setT(“p_mental_hygiene”,phys+43);
+  // ── PHYSICAL POWER: starts 60 min after Fajr ──
+  var phys = fajr+60;
+  setT("p_body_weight",  phys);
+  setT("p_hydrate",      phys+2);
+  setT("p_exercise",     phys+5);
+  setT("p_barefoot",     phys+35);
+  setT("p_nature",       phys+38);
+  setT("p_mental_hygiene",phys+43);
 
-// ── BREAKFAST: starts 30 min after physical ends (phys+50) ──
-var bfast = phys+60;
-setT(“p_breakfast”,    bfast);
-setT(“p_mindful_am”,   bfast+15);
-setT(“p_emotional”,    bfast+25);
-setT(“p_empathy”,      bfast+35);
-setT(“p_alignment”,    bfast+45);
+  // ── BREAKFAST: starts 30 min after physical ends (phys+50) ──
+  var bfast = phys+60;
+  setT("p_breakfast",    bfast);
+  setT("p_mindful_am",   bfast+15);
+  setT("p_emotional",    bfast+25);
+  setT("p_empathy",      bfast+35);
+  setT("p_alignment",    bfast+45);
 
-// ── CEO COMMAND: starts 60 min after breakfast ──
-var ceo = bfast+60;
-setT(“p_momentum”,     ceo);
-setT(“p_big3”,         ceo+20);
-setT(“p_study”,        ceo+60);
-setT(“p_read_am”,      ceo+90);
+  // ── CEO COMMAND: starts 60 min after breakfast ──
+  var ceo = bfast+60;
+  setT("p_momentum",     ceo);
+  setT("p_big3",         ceo+20);
+  setT("p_study",        ceo+60);
+  setT("p_read_am",      ceo+90);
 
-// ── DEEP WORK 1: starts 120 min after CEO block ──
-var dw1 = ceo+120;
-setT(“p_dw1”,          dw1);
-setT(“p_content”,      dw1+60);
+  // ── DEEP WORK 1: starts 120 min after CEO block ──
+  var dw1 = ceo+120;
+  setT("p_dw1",          dw1);
+  setT("p_content",      dw1+60);
 
-// ── DEEP WORK 2: 30 min after DW1 ends ──
-var dw2 = dw1+90;
-setT(“p_dw2”,          dw2);
-setT(“p_microlearn_mid”,dw2+60);
+  // ── DEEP WORK 2: 30 min after DW1 ends ──
+  var dw2 = dw1+90;
+  setT("p_dw2",          dw2);
+  setT("p_microlearn_mid",dw2+60);
 
-// ── DHUHR BLOCK: prayer is fixed; lunch & family follow ──
-setT(“p_lunch”,        dhuhr+20);
-setT(“p_talk”,         dhuhr+35);
-setT(“p_kids”,         dhuhr+50);
-setT(“p_nap”,          dhuhr+70);
+  // ── DHUHR BLOCK: prayer is fixed; lunch & family follow ──
+  setT("p_lunch",        dhuhr+20);
+  setT("p_talk",         dhuhr+35);
+  setT("p_kids",         dhuhr+50);
+  setT("p_nap",          dhuhr+70);
 
-// ── WEALTH BLOCK: starts 30 min after nap ──
-var wealth = dhuhr+100;
-setT(“p_numbers”,      wealth);
-setT(“p_sales”,        wealth+20);
-setT(“p_expenses”,     wealth+35);
+  // ── WEALTH BLOCK: starts 30 min after nap ──
+  var wealth = dhuhr+100;
+  setT("p_numbers",      wealth);
+  setT("p_sales",        wealth+20);
+  setT("p_expenses",     wealth+35);
 
-// ── ASR BLOCK: prayer is fixed; DW3 starts right after ──
-var dw3 = asr+15;
-setT(“p_dw3”,          dw3);
-setT(“p_giving”,       dw3+60);
-setT(“p_language”,     dw3+70);
+  // ── ASR BLOCK: prayer is fixed; DW3 starts right after ──
+  var dw3 = asr+15;
+  setT("p_dw3",          dw3);
+  setT("p_giving",       dw3+60);
+  setT("p_language",     dw3+70);
 
-// ── DEEP WORK 4: starts after DW3 ──
-var dw4 = dw3+90;
-setT(“p_organise”,     dw4);
-setT(“p_love_team”,    dw4+10);
-setT(“p_mentor_ci”,    dw4+20);
-setT(“p_forgive”,      dw4+45);
-setT(“p_detox_work”,   dw4+65);
+  // ── DEEP WORK 4: starts after DW3 ──
+  var dw4 = dw3+90;
+  setT("p_organise",     dw4);
+  setT("p_love_team",    dw4+10);
+  setT("p_mentor_ci",    dw4+20);
+  setT("p_forgive",      dw4+45);
+  setT("p_detox_work",   dw4+65);
 
-// ── MAGHRIB BLOCK: prayer is fixed; family follows ──
-setT(“p_love_family”,  maghrib+20);
-setT(“p_dinner”,       maghrib+30);
-setT(“p_mindful_fam”,  maghrib+45);
-setT(“p_human_touch”,  maghrib+65);
-setT(“p_good_deed_exec”,maghrib+75);
+  // ── MAGHRIB BLOCK: prayer is fixed; family follows ──
+  setT("p_love_family",  maghrib+20);
+  setT("p_dinner",       maghrib+30);
+  setT("p_mindful_fam",  maghrib+45);
+  setT("p_human_touch",  maghrib+65);
+  setT("p_good_deed_exec",maghrib+75);
 
-// ── RELAXATION: starts after maghrib family block ──
-var relax = maghrib+90;
-setT(“p_ego”,          relax);
-setT(“p_read_eve”,     relax+10);
-setT(“p_microlearn_eve”,relax+25);
+  // ── RELAXATION: starts after maghrib family block ──
+  var relax = maghrib+90;
+  setT("p_ego",          relax);
+  setT("p_read_eve",     relax+10);
+  setT("p_microlearn_eve",relax+25);
 
-// ── ISHA BLOCK: prayer is fixed; night review follows ──
-setT(“p_eve_dhikr”,    isha+20);
-setT(“p_night_quran”,  isha+30);
-setT(“p_happiness”,    isha+60);
-setT(“p_phone_out”,    isha+110);
-setT(“p_sleep”,        isha+120);
+  // ── ISHA BLOCK: prayer is fixed; night review follows ──
+  setT("p_eve_dhikr",    isha+20);
+  setT("p_night_quran",  isha+30);
+  setT("p_happiness",    isha+60);
+  setT("p_phone_out",    isha+110);
+  setT("p_sleep",        isha+120);
 
-// Update block header time labels
-function blkRange(blkId){
-var blk=null;BLOCKS.forEach(function(b){if(b.id===blkId)blk=b;});
-if(!blk||!blk.habits.length)return “”;
-var first=toMin(blk.habits[0].tag);
-var last=toMin(blk.habits[blk.habits.length-1].tag);
-return minToTime(first)+” – “+minToTime(last+10);
-}
-BLOCKS.forEach(function(blk){blk.time=blkRange(blk.id);});
+  // Update block header time labels
+  function blkRange(blkId){
+    var blk=null;BLOCKS.forEach(function(b){if(b.id===blkId)blk=b;});
+    if(!blk||!blk.habits.length)return "";
+    var first=toMin(blk.habits[0].tag);
+    var last=toMin(blk.habits[blk.habits.length-1].tag);
+    return minToTime(first)+" – "+minToTime(last+10);
+  }
+  BLOCKS.forEach(function(blk){blk.time=blkRange(blk.id);});
 
-// Save updated prayer times
-try{localStorage.setItem(PRAYER_TIMES_KEY,JSON.stringify(prayerTimes));}catch(e){}
+  // Save updated prayer times
+  try{localStorage.setItem(PRAYER_TIMES_KEY,JSON.stringify(prayerTimes));}catch(e){}
 }
 
 // ════════════ DAY COMPLETE ════════════
 function updateNextDayNum(){
-var el=document.getElementById(“nextDayNum”);
-if(el)el.textContent=day>=10?“10 ✓”:(day+1);
+  var el=document.getElementById("nextDayNum");
+  if(el)el.textContent=day>=10?"10 ✓":(day+1);
 }
 function dayComplete(){
-if(day>=10){showToast(“🏆 All 10 days complete! Phase done!”,“info”);return;}
-var t=document.getElementById(“toast”);
-t.innerHTML=‘Day ‘+day+’ complete? <button id="dcYesBtn" style="background:#D4A843;border:none;border-radius:4px;color:#000;font-weight:800;padding:3px 10px;margin-left:8px;cursor:pointer;">Yes →</button>’;
-t.className=“toast show confirm”;
-clearTimeout(t._t);
-document.getElementById(“dcYesBtn”).addEventListener(“click”,confirmDayComplete);
-t._t=setTimeout(function(){t.classList.remove(“show”);t.innerHTML=””;},6000);
+  if(day>=10){showToast("🏆 All 10 days complete! Phase done!","info");return;}
+  var t=document.getElementById("toast");
+  t.innerHTML='Day '+day+' complete? <button id="dcYesBtn" style="background:#D4A843;border:none;border-radius:4px;color:#000;font-weight:800;padding:3px 10px;margin-left:8px;cursor:pointer;">Yes →</button>';
+  t.className="toast show confirm";
+  clearTimeout(t._t);
+  document.getElementById("dcYesBtn").addEventListener("click",confirmDayComplete);
+  t._t=setTimeout(function(){t.classList.remove("show");t.innerHTML="";},6000);
 }
 function confirmDayComplete(){
-var t=document.getElementById(“toast”);
-t.classList.remove(“show”);t.innerHTML=””;
-day=day+1;
-lastRem=null;
-if(snoozeT){clearTimeout(snoozeT);snoozeT=null;}
-load();renderAll();closeSidebar();
-showToast(“➡ Day “+day+” started — Go!”,“info”);
-window.scrollTo({top:0,behavior:“smooth”});
+  var t=document.getElementById("toast");
+  t.classList.remove("show");t.innerHTML="";
+  day=day+1;
+  lastRem=null;
+  if(snoozeT){clearTimeout(snoozeT);snoozeT=null;}
+  load();renderAll();closeSidebar();
+  showToast("➡ Day "+day+" started — Go!","info");
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 
 // ════════════ NOTIFICATIONS — Block start only ════════════
 var notifiedBlocks={};
 function checkBlockNotifications(){
-var now=nowMin();
-BLOCKS.forEach(function(blk){
-if(notifiedBlocks[blk.id])return;
-// Get the first habit’s time as block start
-var firstH=blk.habits[0];
-if(!firstH)return;
-var bStart=toMin(firstH.tag);
-if(bStart<0)return;
-// Notify exactly at block start (within 1 min window)
-if(now>=bStart&&now<bStart+1){
-notifiedBlocks[blk.id]=true;
-var undone=blk.habits.filter(function(h){return!hSt[h.hid];}).length;
-if(undone>0){
-if(“Notification”in window&&Notification.permission===“granted”){
-try{
-new Notification(“⏰ “+blk.icon+” “+blk.title,{
-body:blk.time+” · “+undone+” habit”+(undone>1?“s”:””)+” to complete”,
-icon:”/favicon.ico”,
-badge:”/favicon.ico”
-});
-}catch(e){}
-}
-showToast(“⏰ “+blk.title+” starts now!”,“info”);
-}
-}
-});
+  var now=nowMin();
+  BLOCKS.forEach(function(blk){
+    if(notifiedBlocks[blk.id])return;
+    // Get the first habit's time as block start
+    var firstH=blk.habits[0];
+    if(!firstH)return;
+    var bStart=toMin(firstH.tag);
+    if(bStart<0)return;
+    // Notify exactly at block start (within 1 min window)
+    if(now>=bStart&&now<bStart+1){
+      notifiedBlocks[blk.id]=true;
+      var undone=blk.habits.filter(function(h){return!hSt[h.hid];}).length;
+      if(undone>0){
+        if("Notification"in window&&Notification.permission==="granted"){
+          try{
+            new Notification("⏰ "+blk.icon+" "+blk.title,{
+              body:blk.time+" · "+undone+" habit"+(undone>1?"s":"")+" to complete",
+              icon:"/favicon.ico",
+              badge:"/favicon.ico"
+            });
+          }catch(e){}
+        }
+        showToast("⏰ "+blk.title+" starts now!","info");
+      }
+    }
+  });
 }
 
 // Reset notified blocks each day at midnight
 function checkMidnightReset(){
-var now=new Date();
-if(now.getHours()===0&&now.getMinutes()===0){
-notifiedBlocks={};
-}
+  var now=new Date();
+  if(now.getHours()===0&&now.getMinutes()===0){
+    notifiedBlocks={};
+  }
 }
 
 function showPopup(h){
-var icons={prayer:“🕌”,work:“💼”,rest:“😴”,habit:“⚡”,family:“❤️”};
-document.getElementById(“ppIcon”).textContent=icons[h.type]||“⏰”;
-document.getElementById(“ppTitle”).textContent=”#”+h.n+” — “+h.name;
-document.getElementById(“ppTime”).textContent=h.tag;
-document.getElementById(“ppDesc”).textContent=h.hint;
-document.getElementById(“popup”).classList.add(“show”);
-document.getElementById(“overlay”).classList.add(“show”);
-if(“Notification”in window&&Notification.permission===“granted”){
-try{new Notification(“⏰ Life Clock — “+h.name,{body:h.hint.substring(0,80)+” · “+h.tag,icon:”/favicon.ico”});}
-catch(e){}
-}
+  var icons={prayer:"🕌",work:"💼",rest:"😴",habit:"⚡",family:"❤️"};
+  document.getElementById("ppIcon").textContent=icons[h.type]||"⏰";
+  document.getElementById("ppTitle").textContent="#"+h.n+" — "+h.name;
+  document.getElementById("ppTime").textContent=h.tag;
+  document.getElementById("ppDesc").textContent=h.hint;
+  document.getElementById("popup").classList.add("show");
+  document.getElementById("overlay").classList.add("show");
+  if("Notification"in window&&Notification.permission==="granted"){
+    try{new Notification("⏰ Life Clock — "+h.name,{body:h.hint.substring(0,80)+" · "+h.tag,icon:"/favicon.ico"});}
+    catch(e){}
+  }
 }
 function markFromPopup(){if(popHid)toggleHabit(popHid.hid);closePopup();}
 function closePopup(){
-document.getElementById(“popup”).classList.remove(“show”);
-document.getElementById(“overlay”).classList.remove(“show”);
-if(snoozeT)clearTimeout(snoozeT);
-if(popHid&&!hSt[popHid.hid]){
-(function(hh){snoozeT=setTimeout(function(){if(!hSt[hh.hid])showPopup(hh);},5*60*1000);})(popHid);
-}
+  document.getElementById("popup").classList.remove("show");
+  document.getElementById("overlay").classList.remove("show");
+  if(snoozeT)clearTimeout(snoozeT);
+  if(popHid&&!hSt[popHid.hid]){
+    (function(hh){snoozeT=setTimeout(function(){if(!hSt[hh.hid])showPopup(hh);},5*60*1000);})(popHid);
+  }
 }
 
 function showToast(msg,type){
-var t=document.getElementById(“toast”);t.textContent=msg;t.className=“toast show”+(type?” “+type:””);
-clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove(“show”);},2800);
+  var t=document.getElementById("toast");t.textContent=msg;t.className="toast show"+(type?" "+type:"");
+  clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("show");},2800);
 }
 function resetDay(){
-var t=document.getElementById(“toast”);
-t.innerHTML=‘Reset Day ‘+day+’? <button id="rstYesBtn" style="background:#FF4F4F;border:none;border-radius:4px;color:#fff;font-weight:800;padding:3px 10px;margin-left:8px;cursor:pointer;">Reset</button>’;
-t.className=“toast show warn”;
-clearTimeout(t._t);
-document.getElementById(“rstYesBtn”).addEventListener(“click”,confirmReset);
-t._t=setTimeout(function(){t.classList.remove(“show”);t.innerHTML=””;},5000);
+  var t=document.getElementById("toast");
+  t.innerHTML='Reset Day '+day+'? <button id="rstYesBtn" style="background:#FF4F4F;border:none;border-radius:4px;color:#fff;font-weight:800;padding:3px 10px;margin-left:8px;cursor:pointer;">Reset</button>';
+  t.className="toast show warn";
+  clearTimeout(t._t);
+  document.getElementById("rstYesBtn").addEventListener("click",confirmReset);
+  t._t=setTimeout(function(){t.classList.remove("show");t.innerHTML="";},5000);
 }
 function confirmReset(){
-var t=document.getElementById(“toast”);
-t.classList.remove(“show”);t.innerHTML=””;
-hSt={};wSt={};save();lastRem=null;renderAll();
-showToast(“↺ Day “+day+” reset”,“warn”);
+  var t=document.getElementById("toast");
+  t.classList.remove("show");t.innerHTML="";
+  hSt={};wSt={};save();lastRem=null;renderAll();
+  showToast("↺ Day "+day+" reset","warn");
 }
-function closeSidebar(){document.getElementById(“sidebar”).classList.remove(“open”);document.getElementById(“bdrop”).classList.remove(“show”);}
+function closeSidebar(){document.getElementById("sidebar").classList.remove("open");document.getElementById("bdrop").classList.remove("show");}
 
 // ════════════ BOOT ════════════
 function initNotifications(){
-try{
-if(“Notification”in window){
-if(Notification.permission===“default”){
-Notification.requestPermission().then(function(p){
-var lbl=document.getElementById(“notifLbl”);
-if(lbl)lbl.textContent=“🔔 Notifications: “+(p===“granted”?“ON — block alerts active”:“Please enable in Settings”);
-});
-} else {
-var lbl=document.getElementById(“notifLbl”);
-if(lbl)lbl.textContent=“🔔 Notifications: “+(Notification.permission===“granted”?“ON — block alerts active”:“Enable in iPhone Settings > Safari”);
-}
-}
-}catch(e){}
+  try{
+    if("Notification"in window){
+      if(Notification.permission==="default"){
+        Notification.requestPermission().then(function(p){
+          var lbl=document.getElementById("notifLbl");
+          if(lbl)lbl.textContent="🔔 Notifications: "+(p==="granted"?"ON — block alerts active":"Please enable in Settings");
+        });
+      } else {
+        var lbl=document.getElementById("notifLbl");
+        if(lbl)lbl.textContent="🔔 Notifications: "+(Notification.permission==="granted"?"ON — block alerts active":"Enable in iPhone Settings > Safari");
+      }
+    }
+  }catch(e){}
 }
 
 function bindEvents(){
-function on(id,ev,fn){var el=document.getElementById(id);if(el)el[ev]=fn;}
-on(“menuBtn”,“onclick”,function(){document.getElementById(“sidebar”).classList.toggle(“open”);document.getElementById(“bdrop”).classList.toggle(“show”);});
-on(“bdrop”,“onclick”,closeSidebar);
-on(“rstBtn”,“onclick”,resetDay);
-on(“ppOk”,“onclick”,markFromPopup);
-on(“ppSkip”,“onclick”,closePopup);
-on(“overlay”,“onclick”,closePopup);
-on(“editOverlay”,“onclick”,function(e){if(e.target===this)closeEditPopup();});
-on(“reportBtn”,“onclick”,function(){showReport();closeSidebar();});
-on(“rpClose”,“onclick”,function(){document.getElementById(“reportPanel”).classList.remove(“show”);});
-on(“mentorBtn”,“onclick”,function(){openMentor();closeSidebar();});
-on(“mentorClose”,“onclick”,function(){document.getElementById(“mentorOverlay”).classList.remove(“show”);});
-on(“mentorSend”,“onclick”,sendMentor);
-on(“mentorInput”,“onkeydown”,function(e){if(e.key===“Enter”)sendMentor();});
-on(“mentorOverlay”,“onclick”,function(e){if(e.target===this)this.classList.remove(“show”);});
-on(“searchInp”,“oninput”,function(){doSearch(this.value);});
-on(“searchClear”,“onclick”,function(){document.getElementById(“searchInp”).value=””;doSearch(””);});
-on(“prayerTimesBtn”,“onclick”,editPrayerTimes);
-on(“dayCompleteBtn”,“onclick”,dayComplete);
+  function on(id,ev,fn){var el=document.getElementById(id);if(el)el[ev]=fn;}
+  on("menuBtn","onclick",function(){document.getElementById("sidebar").classList.toggle("open");document.getElementById("bdrop").classList.toggle("show");});
+  on("bdrop","onclick",closeSidebar);
+  on("rstBtn","onclick",resetDay);
+  on("ppOk","onclick",markFromPopup);
+  on("ppSkip","onclick",closePopup);
+  on("overlay","onclick",closePopup);
+  on("editOverlay","onclick",function(e){if(e.target===this)closeEditPopup();});
+  on("reportBtn","onclick",function(){showReport();closeSidebar();});
+  on("rpClose","onclick",function(){document.getElementById("reportPanel").classList.remove("show");});
+  on("mentorBtn","onclick",function(){openMentor();closeSidebar();});
+  on("mentorClose","onclick",function(){document.getElementById("mentorOverlay").classList.remove("show");});
+  on("mentorSend","onclick",sendMentor);
+  on("mentorInput","onkeydown",function(e){if(e.key==="Enter")sendMentor();});
+  on("mentorOverlay","onclick",function(e){if(e.target===this)this.classList.remove("show");});
+  on("searchInp","oninput",function(){doSearch(this.value);});
+  on("searchClear","onclick",function(){document.getElementById("searchInp").value="";doSearch("");});
+  on("prayerTimesBtn","onclick",editPrayerTimes);
+  on("dayCompleteBtn","onclick",dayComplete);
 }
 
 window.onload=function(){
-try{loadPrayerTimes();}catch(e){console.log(“prayerTimes err”,e);}
-try{load();}catch(e){console.log(“load err”,e);}
-try{renderAll();}catch(e){console.log(“render err”,e);}
-try{bindEvents();}catch(e){console.log(“events err”,e);}
-try{setInterval(tick,1000);}catch(e){}
-try{setInterval(function(){highlightNow();checkBlockNotifications();checkMidnightReset();},60000);}catch(e){}
-try{tick();}catch(e){}
-try{highlightNow();}catch(e){}
-try{checkBlockNotifications();}catch(e){}
-try{initNotifications();}catch(e){}
+  try{loadPrayerTimes();}catch(e){console.log("prayerTimes err",e);}
+  try{load();}catch(e){console.log("load err",e);}
+  try{renderAll();}catch(e){console.log("render err",e);}
+  try{bindEvents();}catch(e){console.log("events err",e);}
+  try{setInterval(tick,1000);}catch(e){}
+  try{setInterval(function(){highlightNow();checkBlockNotifications();checkMidnightReset();},60000);}catch(e){}
+  try{tick();}catch(e){}
+  try{highlightNow();}catch(e){}
+  try{checkBlockNotifications();}catch(e){}
+  try{initNotifications();}catch(e){}
 };
 </script>
 
