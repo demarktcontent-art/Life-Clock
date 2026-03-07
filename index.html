@@ -618,6 +618,7 @@ box-shadow:0 4px 20px rgba(212,168,67,.25);
 transition:opacity .2s, transform .1s;
 }
 .day-complete-btn:active{opacity:.8;transform:scale(.98);}
+.step-dots{display:flex;gap:4px;margin-top:5px;}.s-dot{width:7px;height:7px;border-radius:50%;background:rgba(245,208,112,.2);transition:background .25s;}.s-dot.filled{background:#F5D070;}
 </style>
 
 </head>
@@ -644,7 +645,7 @@ transition:opacity .2s, transform .1s;
         <span class="r-sub">TODAY</span>
       </div>
     </div>
-    <div class="sb-info"><b id="doneC">0</b> / <b id="totalC">42</b> habits</div>
+    <div class="sb-info"><b id="doneC">0</b> / <b id="totalC">30</b> habits</div>
   </div>
   <div class="sb-days">
     <span class="sec-lbl">Phase Block — Days 1–10</span>
@@ -679,7 +680,7 @@ transition:opacity .2s, transform .1s;
     </div>
     <div class="tb-r">
       <div class="tb-stat"><span class="tb-n gold" id="tbDone">0</span><span class="tb-l2">Done</span></div>
-      <div class="tb-stat"><span class="tb-n" id="tbLeft">42</span><span class="tb-l2">Left</span></div>
+      <div class="tb-stat"><span class="tb-n" id="tbLeft">30</span><span class="tb-l2">Left</span></div>
       <div class="tb-stat"><span class="tb-n gold" id="tbDay">D1</span><span class="tb-l2">Day</span></div>
       <button class="prayer-times-btn" id="prayerTimesBtn">🕌</button>
       <button class="prayer-times-btn" id="globalReorderBtn" title="Reorder habits">⇅</button>
@@ -789,36 +790,40 @@ var BLOCKS=[
 
   // ─── BLOCK 1: FAJR + MORNING ───────────────────────────────
   {id:"s1",icon:"🌅",title:"Fajr + Morning Foundation",time:"5:00 – 6:00 AM",type:"prayer",prayerBlock:true,habits:[
-    {n:1,id:"p_fajr",hid:"p_fajr",tag:"5:00 AM",type:"prayer",name:"Fajr Prayer",hint:"Start with the Almighty. Full salah.",prayerEdit:true,work:[]},
-    {n:2,id:"p_fajr_dhikr",hid:"p_fajr_dhikr",tag:"5:20 AM",type:"prayer",name:"Morning Dhikr + Quran",hint:"Morning adhkar — then 1 page of Quran.",work:[]},
-    {n:3,id:"p_power_decl",hid:"p_power_decl",tag:"5:30 AM",type:"habit",name:"Power Declaration",hint:'"I AM Disciplined" — say it 3 times. Visualise your CEO self.',work:[]},
-    {n:4,id:"p_gratitude",hid:"p_gratitude",tag:"5:35 AM",type:"habit",name:"Gratitude + Intention",hint:"3 gratitudes. Set 1 good deed intention for today.",note:true,notePlaceholder:"3 Gratitudes:\n1.\n2.\n3.\n\nGood deed today:",work:[]},
+    {n:1,id:"p_fajr",hid:"p_fajr",tag:"5:00 AM",type:"prayer",name:"Fajr Prayer",hint:"Full salah. #36 Prayer · #37 Remembrance.",prayerEdit:true,work:[]},
+    {n:2,id:"p_fajr_dhikr",hid:"p_fajr_dhikr",tag:"5:20 AM",type:"prayer",name:"Morning Dhikr + Quran",hint:"Morning adhkar · 1 page Quran. #37 · #38 Sacred Reading.",work:[]},
+    {n:3,id:"p_power_decl",hid:"p_power_decl",tag:"5:30 AM",type:"habit",name:"Power Declaration",hint:'"I AM Disciplined" × 3 · Mind Movie 60s · Power Pose',
+      steps:["#01 Say 'I AM Disciplined' 3× out loud","#02 Mind Movie — see your best self for 60s","#03 Power Pose — stand tall, smile wide"],work:[]},
+    {n:4,id:"p_gratitude",hid:"p_gratitude",tag:"5:35 AM",type:"habit",name:"Gratitude + Intention",hint:"Write 3 gratitudes · Emotional Alchemy · Alignment Win",
+      note:true,notePlaceholder:"3 Gratitudes:\n1.\n2.\n3.\n\nAlignment Win today:\n\nGood deed intention:",work:[]},
   ]},
 
   // ─── BLOCK 2: PHYSICAL ─────────────────────────────────────
   {id:"s2",icon:"💪",title:"Physical Power",time:"6:00 – 7:00 AM",type:"habit",habits:[
-    {n:5,id:"p_hydrate",hid:"p_hydrate",tag:"6:00 AM",type:"habit",name:"Hydrate + Weight",hint:"2 glasses of water. Log your weight.",note:true,notePlaceholder:"Weight today: __ kg",work:[]},
-    {n:6,id:"p_exercise",hid:"p_exercise",tag:"6:05 AM",type:"habit",name:"Exercise — 30 Min",hint:"Gym / HIIT / Yoga / Walk. Zero excuse.",note:true,notePlaceholder:"What did you do? Duration:",work:[]},
-    {n:7,id:"p_breakfast",hid:"p_breakfast",tag:"6:40 AM",type:"rest",name:"Breakfast — No Screen",hint:"Balanced meal. Eat mindfully. No phone at table.",work:[]},
+    {n:5,id:"p_hydrate",hid:"p_hydrate",tag:"6:00 AM",type:"habit",name:"Hydrate + Weight",hint:"2 glasses now · Log weight · Nature touch. #10 #16 #34",
+      note:true,notePlaceholder:"Weight: __ kg\nNature touch:",work:[]},
+    {n:6,id:"p_exercise",hid:"p_exercise",tag:"6:05 AM",type:"habit",name:"Exercise — 30 Min",hint:"Move 30 min · Mindful presence · Touch someone. #11 #08 #14",
+      steps:["#11 Move — 30 min Gym / HIIT / Yoga / Walk","#14 Touch — hug someone or walk barefoot"],work:[]},
+    {n:7,id:"p_breakfast",hid:"p_breakfast",tag:"6:40 AM",type:"rest",name:"Breakfast — No Screen",hint:"Eat healthy · Be present · Mental hygiene reset. #13 #07",work:[]},
   ]},
 
   // ─── BLOCK 3: CEO COMMAND ──────────────────────────────────
   {id:"s3",icon:"📊",title:"CEO Command — Plan + Numbers",time:"7:00 – 10:00 AM",type:"habit",habits:[
-    {n:8,id:"p_momentum",hid:"p_momentum",tag:"7:00 AM",type:"habit",name:"Numbers Check",hint:"Sales, ad ROAS, revenue, cashflow. Know your numbers.",note:true,notePlaceholder:"Sales: \nAd spend / ROAS: \nCashflow: \nTop issue today:",work:[
+    {n:8,id:"p_momentum",hid:"p_momentum",tag:"7:00 AM",type:"habit",name:"Numbers Check",hint:"Sales, ad ROAS, revenue, cashflow. Know your numbers.",work:[
       {id:"w_mom_b",tx:"Review yesterday: sales, ad ROAS, revenue"},
       {id:"w_mom_c",tx:"Check team KPIs, orders, open issues"},
     ]},
-    {n:9,id:"p_big3",hid:"p_big3",tag:"7:20 AM",type:"habit",name:"3 Big Moves Today",hint:"Only 3. These must move the needle. Nothing else matters.",note:true,notePlaceholder:"Big Move 1:\nBig Move 2:\nBig Move 3:",work:[
+    {n:9,id:"p_big3",hid:"p_big3",tag:"7:20 AM",type:"habit",name:"3 Big Moves Today",hint:"Only 3. These must move the needle. Nothing else matters.",work:[
       {id:"w_b3_a",tx:"Big Move 1 — top revenue or growth action"},
       {id:"w_b3_b",tx:"Big Move 2 — operations or product priority"},
       {id:"w_b3_c",tx:"Big Move 3 — team, system, or brand task"},
     ]},
-    {n:10,id:"p_study",hid:"p_study",tag:"8:00 AM",type:"habit",name:"Study — 30 Min",hint:"CK / BRAVE / book. Invest in your knowledge daily.",note:true,notePlaceholder:"What did you study? Key insight:",work:[]},
+    {n:10,id:"p_study",hid:"p_study",tag:"8:00 AM",type:"habit",name:"Study — 30 Min",hint:"CK / BRAVE / book. Invest in your knowledge daily.",work:[]},
   ]},
 
   // ─── BLOCK 4: DEEP WORK 1 — GROWTH ────────────────────────
   {id:"s4",icon:"🔥",title:"Deep Work 1 — Growth Engine",time:"10:00 – 11:30 AM",type:"work",habits:[
-    {n:11,id:"p_dw1",hid:"p_dw1",tag:"10:00 AM",type:"work",name:"90-Min Block — Growth",hint:"Phone OFF. DND. No WhatsApp. Build revenue, not just run it.",note:true,notePlaceholder:"What did you build/complete?",work:[
+    {n:11,id:"p_dw1",hid:"p_dw1",tag:"10:00 AM",type:"work",name:"90-Min Block — Growth",hint:"Phone OFF · DND · No WhatsApp. Build revenue, not just run it.",work:[
       {id:"w_dw1_a",tx:"MON/WED: Meta/Google Ads — scale winners"},
       {id:"w_dw1_b",tx:"TUE/THU: Products & suppliers — listings"},
       {id:"w_dw1_c",tx:"FRI: Systems & SOPs — automation, hiring"},
@@ -828,12 +833,12 @@ var BLOCKS=[
 
   // ─── BLOCK 5: DEEP WORK 2 — SCALE & B2B ──────────────────
   {id:"s5",icon:"⚡",title:"Deep Work 2 — Scale & B2B",time:"11:30 AM – 1:00 PM",type:"work",habits:[
-    {n:12,id:"p_dw2",hid:"p_dw2",tag:"11:30 AM",type:"work",name:"90-Min Block — Scale & B2B",hint:"B2B pipeline, marketplace growth, lead generation.",note:true,notePlaceholder:"What did you complete?",work:[
+    {n:12,id:"p_dw2",hid:"p_dw2",tag:"11:30 AM",type:"work",name:"90-Min Block — Scale & B2B",hint:"B2B pipeline, marketplace growth, lead generation.",work:[
       {id:"w_dw2_a",tx:"B2B strategy — pipeline, bulk deals, partners"},
       {id:"w_dw2_b",tx:"Marketplace development — new channels, listings, growth"},
       {id:"w_dw2_c",tx:"Email + WhatsApp number scraping — lead generation"},
     ]},
-    {n:13,id:"p_outreach",hid:"p_outreach",tag:"12:45 PM",type:"work",name:"Client Outreach",hint:"Send 5 outreach messages. Follow up on leads. Build pipeline.",note:true,notePlaceholder:"Who did you reach out to? Any replies?",work:[
+    {n:13,id:"p_outreach",hid:"p_outreach",tag:"12:45 PM",type:"work",name:"Client Outreach",hint:"Send 5 outreach messages. Follow up on leads. Build pipeline.",work:[
       {id:"w_out_a",tx:"Send 5 B2B or bulk deal messages"},
       {id:"w_out_b",tx:"Follow up on existing leads"},
     ]},
@@ -841,19 +846,20 @@ var BLOCKS=[
 
   // ─── BLOCK 6: DHUHR + LUNCH ───────────────────────────────
   {id:"s6",icon:"🕐",title:"Dhuhr + Lunch Break",time:"1:00 – 2:30 PM",type:"prayer",prayerBlock:true,habits:[
-    {n:14,id:"p_dhuhr",hid:"p_dhuhr",tag:"1:00 PM",type:"prayer",name:"Dhuhr Prayer",hint:"Sacred midday pause. Full salah.",prayerEdit:true,work:[]},
-    {n:15,id:"p_lunch",hid:"p_lunch",tag:"1:20 PM",type:"rest",name:"Lunch + Family",hint:"Balanced meal. 15 min with family or team. No screen.",work:[]},
-    {n:16,id:"p_nap",hid:"p_nap",tag:"2:00 PM",type:"rest",name:"Power Nap — 20 Min",hint:"19 minutes. Set timer now. Recharge.",work:[]},
+    {n:14,id:"p_dhuhr",hid:"p_dhuhr",tag:"1:00 PM",type:"prayer",name:"Dhuhr Prayer",hint:"Full salah. #36",prayerEdit:true,work:[]},
+    {n:15,id:"p_lunch",hid:"p_lunch",tag:"1:20 PM",type:"rest",name:"Lunch + Family",hint:"Eat healthy · Love Bomb · Meaningful Talk. #29 #30",
+      steps:["#29 Love Bomb — text, call, or gift someone","#30 Meaningful Talk — 10 min undistracted"],work:[]},
+    {n:16,id:"p_nap",hid:"p_nap",tag:"2:00 PM",type:"rest",name:"Power Nap — 20 Min",hint:"19 minutes. Set timer now. #15",work:[]},
   ]},
 
   // ─── BLOCK 7: DEEP WORK 3 — OPERATIONS ───────────────────
   {id:"s7",icon:"🚀",title:"Deep Work 3 — Operations",time:"2:30 – 4:00 PM",type:"work",habits:[
-    {n:17,id:"p_dw3",hid:"p_dw3",tag:"2:30 PM",type:"work",name:"90-Min Block — Operations",hint:"Customer, competitor, ads. Fix what is broken. Scale what works.",note:true,notePlaceholder:"What did you solve/complete?",work:[
+    {n:17,id:"p_dw3",hid:"p_dw3",tag:"2:30 PM",type:"work",name:"90-Min Block — Operations",hint:"Customer, competitor, ads. Fix what is broken. Scale what works.",work:[
       {id:"w_dw3_a",tx:"Customer feedback — reviews, returns, tickets"},
       {id:"w_dw3_b",tx:"Competitor analysis — pricing, listings, ads"},
       {id:"w_dw3_c",tx:"Ad campaigns — pause losers, scale winners"},
     ]},
-    {n:18,id:"p_content",hid:"p_content",tag:"3:45 PM",type:"work",name:"Content — Post Daily",hint:"Create and publish. 1 piece minimum.",note:true,notePlaceholder:"What did you create/post today?",work:[
+    {n:18,id:"p_content",hid:"p_content",tag:"3:45 PM",type:"work",name:"Content — Post Daily",hint:"Create and publish. 1 piece minimum.",work:[
       {id:"w_con_a",tx:"Create 1 content piece — video, ad, or post"},
       {id:"w_con_b",tx:"DM 3 influencers / outreach"},
     ]},
@@ -861,46 +867,42 @@ var BLOCKS=[
 
   // ─── BLOCK 8: ASR ─────────────────────────────────────────
   {id:"s8",icon:"🕌",title:"Asr Prayer",time:"4:00 – 4:15 PM",type:"prayer",prayerBlock:true,habits:[
-    {n:19,id:"p_asr",hid:"p_asr",tag:"4:00 PM",type:"prayer",name:"Asr Prayer",hint:"Pause everything. Pray. Reset your afternoon.",prayerEdit:true,work:[]},
+    {n:19,id:"p_asr",hid:"p_asr",tag:"4:00 PM",type:"prayer",name:"Asr Prayer",hint:"Full salah · Drop ego · Be soulful. #36 #40",prayerEdit:true,work:[]},
   ]},
 
   // ─── BLOCK 9: WRAP-UP ─────────────────────────────────────
   {id:"s9",icon:"📈",title:"CEO Wrap-Up",time:"4:15 – 6:00 PM",type:"work",habits:[
-    {n:20,id:"p_team",hid:"p_team",tag:"4:15 PM",type:"work",name:"Team + Mentor Check-In",hint:"Accountability. Feedback. Clear blockers.",note:true,notePlaceholder:"Key discussion / action:",work:[
+    {n:20,id:"p_team",hid:"p_team",tag:"4:15 PM",type:"work",name:"Team + Mentor Check-In",hint:"Accountability · Apologise or Forgive. #41 #32",work:[
       {id:"w_mi_a",tx:"Team feedback — working, blocked, needs CEO call"},
       {id:"w_mi_b",tx:"Message mentor / accountability partner"},
     ]},
-    {n:21,id:"p_organise",hid:"p_organise",tag:"5:30 PM",type:"habit",name:"Inbox + Desk Clear",hint:"Close the day clean. Your space defines you.",work:[
-      {id:"w_org_a",tx:"Clear desk, organise inbox, close work apps"},
-    ]},
-    {n:22,id:"p_detox_work",hid:"p_detox_work",tag:"5:50 PM",type:"habit",name:"Work Day Ends — Log Off",hint:"Close all work apps. Work stops at 6 PM.",work:[]},
+    {n:21,id:"p_organise",hid:"p_organise",tag:"5:30 PM",type:"habit",name:"Inbox + Desk Clear",hint:"Clear desk · inbox · make it a high-energy corner. #33",work:[]},
   ]},
 
   // ─── BLOCK 10: MAGHRIB + FAMILY ───────────────────────────
   {id:"s10",icon:"🌆",title:"Maghrib + Family",time:"6:00 – 7:30 PM",type:"family",prayerBlock:true,habits:[
-    {n:23,id:"p_maghrib",hid:"p_maghrib",tag:"6:00 PM",type:"prayer",name:"Maghrib Prayer",hint:"Pray with family. Full salah.",prayerEdit:true,work:[]},
-    {n:24,id:"p_sales",hid:"p_sales",tag:"6:20 PM",type:"work",name:"Daily Revenue Log",hint:"Record today's numbers. No guessing.",note:true,notePlaceholder:"Revenue today:\nTop product:\nAd spend:\nROAS:",work:[
+    {n:23,id:"p_maghrib",hid:"p_maghrib",tag:"6:00 PM",type:"prayer",name:"Maghrib Prayer",hint:"Pray with family. Full salah. #36",prayerEdit:true,work:[]},
+    {n:22,id:"p_detox_work",hid:"p_detox_work",tag:"6:15 PM",type:"habit",name:"Work Day Ends — Log Off",hint:"Close work · Mental reset · Digital detox. #07 #35",
+      steps:["Close all work apps — work is done for today","#07 Mental Hygiene — 1-min pause, exhale, reset","#35 Digital Detox — phone down, screens off, be present"],work:[]},
+    {n:24,id:"p_sales",hid:"p_sales",tag:"6:45 PM",type:"work",name:"Daily Revenue Log",hint:"Sales · savings · Act of Giving. #22 #23 #24",work:[
       {id:"w_sal_a",tx:"Log actual revenue in scorecard"},
       {id:"w_sal_b",tx:"Cashflow check — incoming, outgoing, net"},
     ]},
-    {n:25,id:"p_good_deed_exec",hid:"p_good_deed_exec",tag:"6:45 PM",type:"prayer",name:"Good Deed Done",hint:"Did you do the good act you planned at Fajr?",note:true,notePlaceholder:"What good deed did you do today?",work:[]},
   ]},
 
   // ─── BLOCK 11: ISHA + NIGHT CLOSE ─────────────────────────
   {id:"s11",icon:"🌙",title:"Isha + Night Review",time:"8:00 – 10:00 PM",type:"prayer",prayerBlock:true,habits:[
-    {n:26,id:"p_isha",hid:"p_isha",tag:"8:00 PM",type:"prayer",name:"Isha Prayer",hint:"Full salah. Close the day with the Almighty.",prayerEdit:true,work:[]},
-    {n:27,id:"p_dinner",hid:"p_dinner",tag:"8:20 PM",type:"family",name:"Dinner + Family Time",hint:"Phone away. Be fully present. 60 min.",work:[]},
-    {n:28,id:"p_eve_dhikr",hid:"p_eve_dhikr",tag:"9:00 PM",type:"prayer",name:"Evening Dhikr + Quran",hint:"Evening adhkar — then 5 min Quran before sleep.",work:[]},
-    {n:29,id:"p_happiness",hid:"p_happiness",tag:"9:20 PM",type:"habit",name:"Day Review + Score",hint:"Rate your day 1-10. Write tomorrow's Big 3.",note:true,notePlaceholder:"Happiness Score (1-10): __\nWhy?\n\nTomorrow's Big 3:\n1.\n2.\n3.",work:[
-      {id:"w_hap_a",tx:"Did I hit my Big 3 today?"},
-      {id:"w_hap_b",tx:"Write tomorrow's Top 3 Big Moves"},
-    ]},
-    {n:30,id:"p_sleep",hid:"p_sleep",tag:"10:00 PM",type:"rest",name:"Sleep — Lights Out",hint:"Phone out of room. 10 PM sharp. Wake 5 AM.",work:[]},
+    {n:26,id:"p_isha",hid:"p_isha",tag:"8:00 PM",type:"prayer",name:"Isha Prayer",hint:"Full salah · EGO subtraction · Be soulful. #36 #40",prayerEdit:true,work:[]},
+    {n:25,id:"p_good_deed_exec",hid:"p_good_deed_exec",tag:"8:15 PM",type:"prayer",name:"Good Deed Done",hint:"Unseen · unsaid · selfless. #39",work:[]},
+    {n:27,id:"p_dinner",hid:"p_dinner",tag:"8:30 PM",type:"family",name:"Dinner + Family Time",hint:"Phone away · Meaningful Talk · Love Bomb. #29 #30",
+      steps:["#30 Meaningful Talk — undistracted family time","#29 Love Bomb — express love (words, presence, touch)"],work:[]},
+    {n:28,id:"p_eve_dhikr",hid:"p_eve_dhikr",tag:"9:00 PM",type:"prayer",name:"Evening Dhikr + Quran",hint:"Evening adhkar · 1 page Quran. #37 #38",work:[]},
+    {n:29,id:"p_happiness",hid:"p_happiness",tag:"9:20 PM",type:"habit",name:"Day Review + Score",hint:"Happiness Score · Alignment Win check · Tomorrow's Blueprint. #42 #43",
+      note:true,notePlaceholder:"Happiness Score (1–10): __\nWhy?\n\nAlignment Win achieved? Y/N\n\nTomorrow's Big 3:\n1.\n2.\n3.",work:[]},
+    {n:30,id:"p_sleep",hid:"p_sleep",tag:"10:00 PM",type:"rest",name:"Sleep — Lights Out",hint:"Phone out of room · 7–9 hrs · 10 PM sharp. #12",work:[]},
   ]},
 
 ];
-
-// Auto-build UNIQUE_IDS
 var UNIQUE_IDS=[];
 BLOCKS.forEach(function(b){b.habits.forEach(function(h){if(UNIQUE_IDS.indexOf(h.hid)<0)UNIQUE_IDS.push(h.hid);});});
 
@@ -1206,9 +1208,15 @@ function renderMain(){
 
     getBlockHabits(blk).forEach(function(h){
       var isDone=!!hSt[h.hid];
+      var hasSteps=h.steps&&h.steps.length>0;
       var hasWork=h.work&&h.work.length>0;
       var hasNote=!!h.note;
       var noteKey="lc7_note_d"+day+"_"+h.hid;
+      var stepKey="lc7_step_d"+day+"_"+h.hid;
+      var stepCount=hasSteps?h.steps.length:0;
+      var stepDone=0;
+      if(hasSteps&&!isDone){try{stepDone=parseInt(localStorage.getItem(stepKey)||"0",10)||0;}catch(e){stepDone=0;}}
+      if(isDone&&hasSteps)stepDone=stepCount;
       var hasExpand=hasWork||hasNote;
 
       // Card
@@ -1233,18 +1241,68 @@ function renderMain(){
 
       var mid=mk("div","hc-mid");
       var nm=mk("div","hc-name");nm.textContent=h.name;
-      var ht=mk("div","hc-hint");ht.textContent=h.hint;
+      // hint shows current step prompt if steps exist
+      var ht=mk("div","hc-hint");
+      if(hasSteps&&!isDone){
+        ht.textContent=h.steps[stepDone]||h.hint;
+      } else {
+        ht.textContent=h.hint;
+      }
       mid.appendChild(nm);mid.appendChild(ht);
+
+      // Step progress dots
+      if(hasSteps){
+        var dotRow=mk("div","step-dots");dotRow.id="dots-"+h.hid;
+        for(var si=0;si<stepCount;si++){
+          var dot=mk("span","s-dot"+(si<stepDone?" filled":"")+(isDone?" filled":""));
+          dotRow.appendChild(dot);
+        }
+        mid.appendChild(dotRow);
+      }
       if(hasExpand){var wtag=mk("span","hc-work-tag");wtag.textContent=(hasWork?"+ tasks ":"")+(hasNote?"+ notes":"");mid.appendChild(wtag);}
 
+      // Circle — progress arc for steps, plain check otherwise
       var chkWrap=mk("div","hc-chk");
-      var chk=mk("div","chk");chk.textContent=isDone?"✓":"";
-      chkWrap.appendChild(chk);
+      if(hasSteps){
+        var svgNS="http://www.w3.org/2000/svg";
+        var svg=document.createElementNS(svgNS,"svg");
+        svg.setAttribute("width","36");svg.setAttribute("height","36");svg.setAttribute("viewBox","0 0 36 36");
+        svg.style.display="block";
+        var r=14,cx=18,cy=18,circ=2*Math.PI*r;
+        var pct=isDone?1:(stepDone/stepCount);
+        // bg track
+        var bg=document.createElementNS(svgNS,"circle");
+        bg.setAttribute("cx",cx);bg.setAttribute("cy",cy);bg.setAttribute("r",r);
+        bg.setAttribute("fill","none");bg.setAttribute("stroke","rgba(245,208,112,.18)");bg.setAttribute("stroke-width","3");
+        svg.appendChild(bg);
+        // arc
+        var arc=document.createElementNS(svgNS,"circle");
+        arc.setAttribute("cx",cx);arc.setAttribute("cy",cy);arc.setAttribute("r",r);
+        arc.setAttribute("fill","none");arc.setAttribute("stroke",isDone?"#F5D070":"#F5D070");arc.setAttribute("stroke-width","3");
+        arc.setAttribute("stroke-dasharray",circ);
+        arc.setAttribute("stroke-dashoffset",circ-(pct*circ));
+        arc.setAttribute("stroke-linecap","round");
+        arc.setAttribute("transform","rotate(-90 "+cx+" "+cy+")");
+        arc.id="arc-"+h.hid;
+        svg.appendChild(arc);
+        // centre label
+        var txt=document.createElementNS(svgNS,"text");
+        txt.setAttribute("x",cx);txt.setAttribute("y",cy+1);
+        txt.setAttribute("text-anchor","middle");txt.setAttribute("dominant-baseline","middle");
+        txt.setAttribute("font-size","11");txt.setAttribute("fill","#F5D070");txt.setAttribute("font-weight","700");
+        txt.id="arclbl-"+h.hid;
+        txt.textContent=isDone?"✓":(stepDone>0?stepDone+"/"+stepCount:"");
+        svg.appendChild(txt);
+        chkWrap.appendChild(svg);
+      } else {
+        var chk=mk("div","chk");chk.textContent=isDone?"✓":"";
+        chkWrap.appendChild(chk);
+      }
 
       row.appendChild(left);row.appendChild(mid);row.appendChild(chkWrap);
       card.appendChild(row);
 
-      // Expand panel
+      // Expand panel (tasks + notes)
       if(hasExpand){
         var exp=mk("div","hc-expand");exp.id="he-"+h.id;
         var inner=mk("div","hc-exp-inner");
@@ -1281,21 +1339,44 @@ function renderMain(){
 
       sec.appendChild(card);
 
-      // Row click
-      row.addEventListener("click",function(e){
-        if(e.target.closest(".hc-chk")){toggleHabit(h.hid);return;}
-        if(e.target.tagName==="TEXTAREA")return;
-        if(hasExpand){
-          var ep=document.getElementById("he-"+h.id);
-          if(ep)ep.classList.toggle("open");
-        } else {
-          toggleHabit(h.hid);
-        }
-      });
+      // Row click — steps advance on tap; work/note habits expand
+      (function(hh,hasS,sCount,noteExp,hId,hasW){
+        row.addEventListener("click",function(e){
+          if(e.target.tagName==="TEXTAREA")return;
+          if(e.target.closest(".w-row"))return;
+          if(hasS&&!hSt[hh]){
+            var cur=0;try{cur=parseInt(localStorage.getItem("lc7_step_d"+day+"_"+hh)||"0",10)||0;}catch(x){}
+            cur++;
+            if(cur>=sCount){
+              try{localStorage.removeItem("lc7_step_d"+day+"_"+hh);}catch(x){}
+              toggleHabit(hh);
+            } else {
+              try{localStorage.setItem("lc7_step_d"+day+"_"+hh,cur);}catch(x){}
+              var arcEl=document.getElementById("arc-"+hh);
+              var lblEl=document.getElementById("arclbl-"+hh);
+              var htEl=row.querySelector(".hc-hint");
+              var dotsEl=document.getElementById("dots-"+hh);
+              var r2=14,circ2=2*Math.PI*r2,p2=cur/sCount;
+              if(arcEl)arcEl.setAttribute("stroke-dashoffset",circ2-(p2*circ2));
+              if(lblEl)lblEl.textContent=cur+"/"+sCount;
+              if(htEl&&h.steps[cur])htEl.textContent=h.steps[cur];
+              if(dotsEl){var ds=dotsEl.querySelectorAll(".s-dot");ds.forEach(function(d,i){if(i<cur)d.classList.add("filled");});}
+            }
+            return;
+          }
+          if(e.target.closest(".hc-chk")){toggleHabit(hh);return;}
+          if(noteExp){
+            var ep=document.getElementById("he-"+hId);
+            if(ep)ep.classList.toggle("open");
+          } else {
+            toggleHabit(hh);
+          }
+        });
+      })(h.hid,hasSteps,stepCount,hasExpand,h.id,hasWork);
 
       // Work row clicks
       if(hasWork){
-        var wrows=inner?inner.querySelectorAll(".w-row"):[];
+        var wrows=card.querySelectorAll(".w-row");
         wrows.forEach(function(wr){
           wr.addEventListener("click",function(e){
             e.stopPropagation();
@@ -1360,7 +1441,28 @@ function toggleHabit(hid){
       var card=document.getElementById("hc-"+h.id);
       if(card){
         card.classList.toggle("done",!was);
+        // plain chk circle
         var c=card.querySelector(".chk");if(c)c.textContent=!was?"✓":"";
+        // arc circle for steps
+        if(h.steps&&h.steps.length){
+          var arcEl=document.getElementById("arc-"+hid);
+          var lblEl=document.getElementById("arclbl-"+hid);
+          var r=14,circ=2*Math.PI*r;
+          if(!was){
+            // completing — fill arc
+            if(arcEl)arcEl.setAttribute("stroke-dashoffset","0");
+            if(lblEl)lblEl.textContent="✓";
+            try{localStorage.removeItem("lc7_step_d"+day+"_"+hid);}catch(x){}
+          } else {
+            // un-completing — reset arc
+            if(arcEl)arcEl.setAttribute("stroke-dashoffset",circ);
+            if(lblEl)lblEl.textContent="";
+            var htEl=card.querySelector(".hc-hint");
+            if(htEl)htEl.textContent=h.steps[0]||h.hint;
+            var dotsEl=document.getElementById("dots-"+hid);
+            if(dotsEl){var ds=dotsEl.querySelectorAll(".s-dot");ds.forEach(function(d){d.classList.remove("filled");});}
+          }
+        }
         var nb=document.getElementById("ndone-"+h.hid);
         if(nb){nb.textContent=!was?"✓ Marked Done":"Mark as Done";nb.classList.toggle("note-done-active",!was);}
       }
@@ -1382,7 +1484,24 @@ function toggleWork(wid,hid,el){
   BLOCKS.forEach(function(b){b.habits.forEach(function(h){
     if(h.hid===hid&&h.work&&h.work.length)h.work.forEach(function(w){if(!wSt[w.id])allDone=false;});
   });});
+  // auto-complete when all tasks ticked
   if(allDone&&!hSt[hid])toggleHabit(hid);
+  // if un-ticking a task while habit is done, un-complete the habit too
+  if(was&&hSt[hid]){
+    hSt[hid]=false;save();
+    BLOCKS.forEach(function(b){b.habits.forEach(function(h){
+      if(h.hid===hid){
+        var card=document.getElementById("hc-"+h.id);
+        if(card){
+          card.classList.remove("done");
+          var c=card.querySelector(".chk");if(c)c.textContent="";
+          var nb=document.getElementById("ndone-"+h.hid);
+          if(nb){nb.textContent="Mark as Done";nb.classList.remove("note-done-active");}
+        }
+      }
+    });});
+    updateProg();renderNav();renderStreak();
+  }
 }
 
 // ════════════ SEARCH ════════════
@@ -1488,7 +1607,7 @@ function openMentor(){
   if(mentorHistory.length===0){
     // greeting with progress context
     var done=doneCount();
-    var greeting="As-salamu alaykum! I'm your Coach Kanchon AI Mentor. 🧠\n\nToday (Day "+day+") you've completed "+done+"/42 habits ("+Math.round(done/42*100)+"%).\n\n";
+    var greeting="As-salamu alaykum! I'm your Coach Kanchon AI Mentor. 🧠\n\nToday (Day "+day+") you've completed "+done+"/"+UNIQUE_IDS.length+" habits ("+Math.round(done/UNIQUE_IDS.length*100)+"%).\n\n";
     if(done===0)greeting+="You haven't started tracking today yet. Let's begin — tap any habit to mark it done.\n\nWhat's your biggest challenge right now?";
     else if(done<15)greeting+="You've made a start. Focus next on completing your physical power block and prayers. What's holding you back?";
     else if(done<30)greeting+="Good progress! You're halfway. Which block do you want to push harder on?";
