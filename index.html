@@ -910,6 +910,8 @@ BLOCKS.forEach(function(b){b.habits.forEach(function(h){if(UNIQUE_IDS.indexOf(h.
 // ════════════ PERSISTENT STORAGE ════════════
 var day=1,remOn=true,hSt={},wSt={},lastRem=null,popHid=null,snoozeT=null;
 var HPFX="lc7_h_d",WPFX="lc7_w_d";
+// restore last active day
+try{var _sd=parseInt(localStorage.getItem("lc7_cur_day")||"1",10);if(_sd>=1&&_sd<=10)day=_sd;}catch(e){}
 
 function load(){
   try{hSt=JSON.parse(localStorage.getItem(HPFX+day)||"{}");wSt=JSON.parse(localStorage.getItem(WPFX+day)||"{}");} 
@@ -945,6 +947,7 @@ function renderDays(){
     if(p>0)b.classList.add("has-p");
     (function(dd){b.onclick=function(){
       day=dd;
+      try{localStorage.setItem("lc7_cur_day",day);}catch(e){}
       lastRem=null;
       if(snoozeT){clearTimeout(snoozeT);snoozeT=null;}
       load();renderAll();closeSidebar();
@@ -1944,6 +1947,7 @@ function confirmDayComplete(){
 
   // Advance day
   day=day+1;
+  try{localStorage.setItem("lc7_cur_day",day);}catch(e){}
   lastRem=null;
   if(snoozeT){clearTimeout(snoozeT);snoozeT=null;}
   load();renderAll();closeSidebar();
