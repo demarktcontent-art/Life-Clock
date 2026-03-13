@@ -37,6 +37,17 @@ a{color:inherit;text-decoration:none;}
 html{scroll-behavior:smooth;background:#080808;}
 body{
   background:#080808 !important;
+  background-image:
+    /* Large central water drop — deep lens */
+    radial-gradient(ellipse 65% 75% at 50% 45%, rgba(255,255,255,.025) 0%, rgba(255,255,255,.008) 40%, transparent 70%),
+    /* Top-left caustic */
+    radial-gradient(ellipse 40% 30% at 18% 22%, rgba(255,255,255,.018) 0%, transparent 60%),
+    /* Bottom-right caustic */
+    radial-gradient(ellipse 35% 28% at 80% 78%, rgba(255,255,255,.015) 0%, transparent 55%),
+    /* Rim light — top edge bright catch */
+    radial-gradient(ellipse 80% 8% at 50% 2%, rgba(255,255,255,.035) 0%, transparent 100%),
+    /* Bottom rim */
+    radial-gradient(ellipse 60% 6% at 50% 99%, rgba(255,255,255,.018) 0%, transparent 100%) !important;
   background-attachment:fixed !important;
   -webkit-background-color:#080808 !important;
   color:#F5F5F5;
@@ -52,88 +63,30 @@ position:fixed;
 inset:0;
 z-index:0;
 pointer-events:none;
-opacity:.55;
+opacity:1;
 background-image:
-/* 6-pointed ice crystal stars scattered across the bg */
-radial-gradient(circle 1px at 8% 12%, rgba(255,255,255,.9) 0%, transparent 100%),
-radial-gradient(circle 1px at 23% 6%, rgba(255,255,255,.7) 0%, transparent 100%),
-radial-gradient(circle 1px at 67% 9%, rgba(255,255,255,.8) 0%, transparent 100%),
-radial-gradient(circle 1px at 85% 4%, rgba(255,255,255,.6) 0%, transparent 100%),
-radial-gradient(circle 1px at 43% 18%, rgba(255,255,255,.7) 0%, transparent 100%),
-radial-gradient(circle 1px at 91% 22%, rgba(255,255,255,.8) 0%, transparent 100%),
-radial-gradient(circle 1px at 14% 31%, rgba(255,255,255,.6) 0%, transparent 100%),
-radial-gradient(circle 1px at 55% 28%, rgba(255,255,255,.7) 0%, transparent 100%),
-radial-gradient(circle 1px at 77% 35%, rgba(255,255,255,.8) 0%, transparent 100%),
-radial-gradient(circle 1px at 32% 42%, rgba(255,255,255,.6) 0%, transparent 100%),
-radial-gradient(circle 1px at 6%  48%, rgba(255,255,255,.7) 0%, transparent 100%),
-radial-gradient(circle 1px at 88% 51%, rgba(255,255,255,.8) 0%, transparent 100%),
-radial-gradient(circle 1px at 19% 58%, rgba(255,255,255,.6) 0%, transparent 100%),
-radial-gradient(circle 1px at 62% 55%, rgba(255,255,255,.7) 0%, transparent 100%),
-radial-gradient(circle 1px at 40% 66%, rgba(255,255,255,.8) 0%, transparent 100%),
-radial-gradient(circle 1px at 94% 68%, rgba(255,255,255,.6) 0%, transparent 100%),
-radial-gradient(circle 1px at 28% 74%, rgba(255,255,255,.7) 0%, transparent 100%),
-radial-gradient(circle 1px at 72% 78%, rgba(255,255,255,.8) 0%, transparent 100%),
-radial-gradient(circle 1px at 11% 84%, rgba(255,255,255,.6) 0%, transparent 100%),
-radial-gradient(circle 1px at 50% 88%, rgba(255,255,255,.7) 0%, transparent 100%),
-radial-gradient(circle 1px at 83% 91%, rgba(255,255,255,.8) 0%, transparent 100%),
-radial-gradient(circle 1px at 36% 95%, rgba(255,255,255,.6) 0%, transparent 100%),
-/* Slightly larger sparkle stars */
-radial-gradient(circle 1.5px at 15% 20%, rgba(240,250,255,.9) 0%, transparent 100%),
-radial-gradient(circle 1.5px at 70% 15%, rgba(255,255,255,.8) 0%, transparent 100%),
-radial-gradient(circle 1.5px at 45% 45%, rgba(240,250,255,.7) 0%, transparent 100%),
-radial-gradient(circle 1.5px at 90% 40%, rgba(255,255,255,.9) 0%, transparent 100%),
-radial-gradient(circle 1.5px at 25% 65%, rgba(240,250,255,.8) 0%, transparent 100%),
-radial-gradient(circle 1.5px at 60% 72%, rgba(255,255,255,.7) 0%, transparent 100%),
-radial-gradient(circle 1.5px at 5%  90%, rgba(240,250,255,.9) 0%, transparent 100%),
-radial-gradient(circle 1.5px at 78% 85%, rgba(255,255,255,.8) 0%, transparent 100%),
-/* Cross/star flares at key points — 4-line cross shape */
-conic-gradient(from 0deg at 15% 20%, transparent 44deg, rgba(255,255,255,.5) 45deg, transparent 46deg,
-transparent 89deg, rgba(255,255,255,.5) 90deg, transparent 91deg,
-transparent 134deg, rgba(255,255,255,.5) 135deg, transparent 136deg,
-transparent 224deg, rgba(255,255,255,.5) 225deg, transparent 226deg,
-transparent 269deg, rgba(255,255,255,.5) 270deg, transparent 271deg,
-transparent 314deg, rgba(255,255,255,.5) 315deg, transparent 316deg),
-conic-gradient(from 0deg at 70% 15%, transparent 44deg, rgba(255,255,255,.4) 45deg, transparent 46deg,
-transparent 89deg, rgba(255,255,255,.4) 90deg, transparent 91deg,
-transparent 134deg, rgba(255,255,255,.4) 135deg, transparent 136deg,
-transparent 224deg, rgba(255,255,255,.4) 225deg, transparent 226deg,
-transparent 269deg, rgba(255,255,255,.4) 270deg, transparent 271deg,
-transparent 314deg, rgba(255,255,255,.4) 315deg, transparent 316deg),
-conic-gradient(from 0deg at 90% 40%, transparent 44deg, rgba(255,255,255,.5) 45deg, transparent 46deg,
-transparent 89deg, rgba(255,255,255,.5) 90deg, transparent 91deg,
-transparent 134deg, rgba(255,255,255,.5) 135deg, transparent 136deg,
-transparent 224deg, rgba(255,255,255,.5) 225deg, transparent 226deg,
-transparent 269deg, rgba(255,255,255,.5) 270deg, transparent 271deg,
-transparent 314deg, rgba(255,255,255,.5) 315deg, transparent 316deg),
-conic-gradient(from 0deg at 25% 65%, transparent 44deg, rgba(255,255,255,.4) 45deg, transparent 46deg,
-transparent 89deg, rgba(255,255,255,.4) 90deg, transparent 91deg,
-transparent 134deg, rgba(255,255,255,.4) 135deg, transparent 136deg,
-transparent 224deg, rgba(255,255,255,.4) 225deg, transparent 226deg,
-transparent 269deg, rgba(255,255,255,.4) 270deg, transparent 271deg,
-transparent 314deg, rgba(255,255,255,.4) 315deg, transparent 316deg),
-conic-gradient(from 0deg at 78% 85%, transparent 44deg, rgba(255,255,255,.45) 45deg, transparent 46deg,
-transparent 89deg, rgba(255,255,255,.45) 90deg, transparent 91deg,
-transparent 134deg, rgba(255,255,255,.45) 135deg, transparent 136deg,
-transparent 224deg, rgba(255,255,255,.45) 225deg, transparent 226deg,
-transparent 269deg, rgba(255,255,255,.45) 270deg, transparent 271deg,
-transparent 314deg, rgba(255,255,255,.45) 315deg, transparent 316deg);
-background-size:
-100% 100%, 100% 100%, 100% 100%, 100% 100%,
-100% 100%, 100% 100%, 100% 100%, 100% 100%,
-100% 100%, 100% 100%, 100% 100%, 100% 100%,
-100% 100%, 100% 100%, 100% 100%, 100% 100%,
-100% 100%, 100% 100%, 100% 100%, 100% 100%,
-100% 100%, 100% 100%,
-100% 100%, 100% 100%, 100% 100%, 100% 100%,
-100% 100%, 100% 100%, 100% 100%, 100% 100%,
-/* flares — small circle around the star point */
-24px 24px, 20px 20px, 22px 22px, 18px 18px, 20px 20px;
-background-position:
-0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0,
-0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0,
-0 0, 0 0, 0 0, 0 0, 0 0, 0 0,
-0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0,
-15% 20%, 70% 15%, 90% 40%, 25% 65%, 78% 85%;
+/* Waterdrop caustic — main lens centre glow */
+radial-gradient(ellipse 55% 60% at 50% 42%, rgba(255,255,255,.022) 0%, rgba(255,255,255,.006) 50%, transparent 75%),
+/* Top specular — bright catch like light on curved water surface */
+radial-gradient(ellipse 35% 12% at 50% 3%, rgba(255,255,255,.055) 0%, transparent 100%),
+/* Left caustic streak */
+radial-gradient(ellipse 18% 55% at 4% 50%, rgba(255,255,255,.018) 0%, transparent 70%),
+/* Right caustic streak */
+radial-gradient(ellipse 18% 55% at 96% 50%, rgba(255,255,255,.015) 0%, transparent 70%),
+/* Bottom refraction pool */
+radial-gradient(ellipse 50% 10% at 50% 98%, rgba(255,255,255,.028) 0%, transparent 100%),
+/* Small bright droplet reflections */
+radial-gradient(circle 2px at 22% 18%, rgba(255,255,255,.7) 0%, transparent 100%),
+radial-gradient(circle 2px at 75% 12%, rgba(255,255,255,.6) 0%, transparent 100%),
+radial-gradient(circle 1.5px at 88% 38%, rgba(255,255,255,.5) 0%, transparent 100%),
+radial-gradient(circle 1.5px at 12% 60%, rgba(255,255,255,.55) 0%, transparent 100%),
+radial-gradient(circle 2px at 55% 82%, rgba(255,255,255,.5) 0%, transparent 100%),
+radial-gradient(circle 1.5px at 35% 70%, rgba(255,255,255,.45) 0%, transparent 100%),
+radial-gradient(circle 1px at 65% 50%, rgba(255,255,255,.5) 0%, transparent 100%),
+radial-gradient(circle 1px at 42% 30%, rgba(255,255,255,.4) 0%, transparent 100%),
+radial-gradient(circle 1px at 80% 65%, rgba(255,255,255,.45) 0%, transparent 100%),
+radial-gradient(circle 1px at 8%  85%, rgba(255,255,255,.4) 0%, transparent 100%);
+background-size:100% 100%;
 background-repeat:no-repeat;
 }
 
@@ -484,9 +437,9 @@ border-radius:14px;
 margin-bottom:7px;
 overflow:hidden;
 position:relative;
-transform:perspective(1200px) rotateX(var(–tiltX,0deg)) rotateY(var(–tiltY,0deg));
-transform-style:preserve-3d;
-will-change:transform, box-shadow;
+transform:none;
+transform-style:flat;
+will-change:auto;
 transition:transform .06s linear, border-color .18s, background .18s;
 border-top:1px solid rgba(255,255,255,.12);
 border-left:1px solid rgba(255,255,255,.07);
@@ -2550,14 +2503,6 @@ function checkBlockNotifications(){
   });
 }
 
-// Reset notified blocks each day at midnight
-function checkMidnightReset(){
-  var now=new Date();
-  if(now.getHours()===0&&now.getMinutes()===0){
-    notifiedBlocks={};
-  }
-}
-
 function showPopup(h){
   var icons={prayer:"🕌",work:"💼",rest:"😴",habit:"⚡",family:"❤️"};
   document.getElementById("ppIcon").textContent=icons[h.type]||"⏰";
@@ -2565,22 +2510,19 @@ function showPopup(h){
   document.getElementById("ppTime").textContent=h.tag;
   document.getElementById("ppDesc").textContent=h.hint;
   document.getElementById("popupOverlay").classList.add("show");
-  document.getElementById("popupOverlay").classList.add("show");
   if("Notification"in window&&Notification.permission==="granted"){
-    try{new Notification("⏰ Life Clock — "+h.name,{body:h.hint.substring(0,80)+" · "+h.tag,icon:"/favicon.ico"});}
+    try{new Notification("⏰ "+h.name,{body:h.hint.substring(0,80)+" · "+h.tag,icon:"/favicon.ico",tag:"lc-"+h.hid});}
     catch(e){}
   }
 }
 function markFromPopup(){if(popHid)toggleHabit(popHid.hid);closePopup();}
 function closePopup(){
   document.getElementById("popupOverlay").classList.remove("show");
-  document.getElementById("popupOverlay").classList.remove("show");
   if(snoozeT)clearTimeout(snoozeT);
   if(popHid&&!hSt[popHid.hid]){
     (function(hh){snoozeT=setTimeout(function(){if(!hSt[hh.hid])showPopup(hh);},5*60*1000);})(popHid);
   }
 }
-
 function showToast(msg,type){
   var t=document.getElementById("toast");t.textContent=msg;t.className="toast show"+(type?" "+type:"");
   clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("show");},2800);
@@ -2601,22 +2543,58 @@ function confirmReset(){
 }
 function closeSidebar(){document.getElementById("sidebar").classList.remove("open");document.getElementById("bdrop").classList.remove("show");}
 
+// Precise per-habit scheduler — sets exact setTimeout for every habit
+var _scheduledTimers = [];
+function scheduleAllReminders(){
+  _scheduledTimers.forEach(function(t){ clearTimeout(t); });
+  _scheduledTimers = [];
+  var now = new Date();
+  var allHabits = [];
+  BLOCKS.forEach(function(blk){ blk.habits.forEach(function(h){ allHabits.push(h); }); });
+  allHabits.forEach(function(h){
+    var min = toMin(h.tag);
+    if(min < 0) return;
+    var fireAt = new Date();
+    fireAt.setHours(Math.floor(min/60), min%60, 0, 0);
+    var ms = fireAt - now;
+    if(ms < -60000 || ms > 24*60*60*1000) return;
+    var t = setTimeout(function(){
+      if(hSt[h.hid]) return;
+      popHid = h;
+      showPopup(h);
+    }, Math.max(0, ms));
+    _scheduledTimers.push(t);
+  });
+}
+
+// Reset + reschedule at midnight
+function checkMidnightReset(){
+  var now = new Date();
+  if(now.getHours()===0 && now.getMinutes()===0){
+    notifiedBlocks = {};
+    scheduleAllReminders();
+  }
+}
+
 // ════════════ BOOT ════════════
 function initNotifications(){
   try{
-    if("Notification"in window){
+    if("Notification" in window){
       if(Notification.permission==="default"){
         Notification.requestPermission().then(function(p){
           var lbl=document.getElementById("notifLbl");
-          if(lbl)lbl.textContent="🔔 Notifications: "+(p==="granted"?"ON — block alerts active":"Please enable in Settings");
+          if(lbl)lbl.textContent="🔔 Notifications: "+(p==="granted"?"ON — reminders active":"Please enable in Settings");
+          if(p==="granted") scheduleAllReminders();
         });
       } else {
         var lbl=document.getElementById("notifLbl");
-        if(lbl)lbl.textContent="🔔 Notifications: "+(Notification.permission==="granted"?"ON — block alerts active":"Enable in iPhone Settings > Safari");
+        if(lbl)lbl.textContent="🔔 Notifications: "+(Notification.permission==="granted"?"ON — reminders active":"Enable in iPhone Settings > Safari");
+        if(Notification.permission==="granted") scheduleAllReminders();
       }
     }
   }catch(e){}
 }
+
 
 function bindEvents(){
   function on(id,ev,fn){var el=document.getElementById(id);if(el)el[ev]=fn;}
@@ -2663,129 +2641,16 @@ window.onload=function(){
   try{checkBlockNotifications();}catch(e){}
   try{initNotifications();}catch(e){}
 
-  /* ── Per-card scroll reflection — light sweeps through each card based on its viewport position ── */
-  (function(){
-    var cards = [];
-    var gyroX = 50, gyroY = 30; // from gyro/mouse
-    var scrollRaf = false;
-
-    function updateCards(){
-      var vh = window.innerHeight;
-      var all = document.querySelectorAll('.hcard');
-      for(var i=0;i<all.length;i++){
-        var c = all[i];
-        var r = c.getBoundingClientRect();
-        // How far through the viewport is this card's center? 0=top, 100=bottom
-        var centerY = r.top + r.height/2;
-        var vpPct = 1 - Math.max(0, Math.min(1, centerY / vh));
-        // Light X from gyro, Light Y = scroll position within this specific card
-        var lx = gyroX;
-        var ly = Math.max(5, Math.min(95, vpPct * 120 - 10));
-        c.style.setProperty('--cx', lx.toFixed(1)+'%');
-        c.style.setProperty('--cy', ly.toFixed(1)+'%');
-      }
-      scrollRaf = false;
-    }
-
-    function onScroll(){
-      if(!scrollRaf){
-        scrollRaf = true;
-        requestAnimationFrame(updateCards);
-      }
-    }
-
-    // Expose gyro update
-    window._setGyroX = function(x){ gyroX = x; onScroll(); };
-
-    var main = document.querySelector('.main') || window;
-    (main === window ? window : main).addEventListener('scroll', onScroll, {passive:true});
-    window.addEventListener('scroll', onScroll, {passive:true});
-    setTimeout(updateCards, 300);
-  })();
-
-  /* ── Gyroscope / mouse glass reflection ── */
+  /* ── Static light position ── */
   (function(){
     var root = document.documentElement;
-    // Target values (raw input)
-    var tx = 50, ty = 50;
-    // Current smoothed values
-    var cx = 50, cy = 50;
-    // Velocity for spring physics
-    var vx = 0, vy = 0;
-    var running = false;
-
-    function loop(){
-      // Spring physics — stiffness 0.1, damping 0.75
-      var fx = (tx - cx) * 0.1;
-      var fy = (ty - cy) * 0.1;
-      vx = vx * 0.75 + fx;
-      vy = vy * 0.75 + fy;
-      cx += vx;
-      cy += vy;
-
-      root.style.setProperty('--gx', cx.toFixed(2) + '%');
-      root.style.setProperty('--gy', cy.toFixed(2) + '%');
-      // Subtle 3D tilt — max ±1.5deg
-      var rotY = ((cx - 50) / 50 * 1.5).toFixed(3);
-      var rotX = ((cy - 50) / 50 * -1.5).toFixed(3);
-      root.style.setProperty('--tiltX', rotX + 'deg');
-      root.style.setProperty('--tiltY', rotY + 'deg');
-
-      // Also update per-card gyro X
-      if(window._setGyroX) window._setGyroX(cx);
-
-      // Keep looping if still moving
-      var moving = Math.abs(vx) > 0.01 || Math.abs(vy) > 0.01;
-      if(moving){ requestAnimationFrame(loop); }
-      else { running = false; }
-    }
-
-    function setTarget(x, y){
-      tx = x; ty = y;
-      if(!running){ running = true; requestAnimationFrame(loop); }
-    }
-
-    /* Gyroscope */
-    function startGyro(){
-      var lastGx = 0, lastGy = 0;
-      window.addEventListener('deviceorientation', function(e){
-        if(e.gamma === null) return;
-        // Low-pass filter on raw sensor to cut jitter
-        lastGx = lastGx * 0.6 + e.gamma * 0.4;
-        lastGy = lastGy * 0.6 + (e.beta - 45) * 0.4;
-        var nx = 50 + (Math.max(-30, Math.min(30, lastGx)) / 30) * 42;
-        var ny = 50 + (Math.max(-30, Math.min(30, lastGy)) / 30) * 42;
-        setTarget(nx, ny);
-      }, {passive:true});
-    }
-
-    if(typeof DeviceOrientationEvent !== 'undefined'){
-      if(typeof DeviceOrientationEvent.requestPermission === 'function'){
-        document.addEventListener('click', function ask(){
-          DeviceOrientationEvent.requestPermission().then(function(r){
-            if(r === 'granted') startGyro();
-          }).catch(function(){});
-          document.removeEventListener('click', ask);
-        }, {once:true});
-      } else {
-        startGyro();
-      }
-    }
-
-    /* Mouse fallback */
-    window.addEventListener('mousemove', function(e){
-      setTarget(
-        (e.clientX / window.innerWidth) * 100,
-        (e.clientY / window.innerHeight) * 100
-      );
-    }, {passive:true});
-
-    root.style.setProperty('--gx','50%');
+    root.style.setProperty('--gx','40%');
     root.style.setProperty('--gy','30%');
     root.style.setProperty('--tiltX','0deg');
     root.style.setProperty('--tiltY','0deg');
   })();
 };
+
 </script>
 
 </body>
